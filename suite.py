@@ -324,7 +324,6 @@ class Suite(object):
                 if file.endswith(tc_lang):
                     if tc_type == 'juliet':
                         # reduce filename to test case name by removing variant and file extension
-                        # file = re.sub('[a-z]?\.\w+$', '', file)
                         file = re.sub('[_,a-z]*\.\w+$', '', file)
                         test_case_files.append(file)
                         print('JULIET TEST CASE FILE', file)
