@@ -9,7 +9,7 @@ import xml.etree.ElementTree as ET
 
 from hashlib import sha1
 from time import strftime
-from suite import Suite, TestCase
+from suite import Suite, TestCase, LANG
 from operator import itemgetter
 from openpyxl import load_workbook
 from openpyxl.styles import Border, Side, PatternFill, Font, Alignment
@@ -23,7 +23,6 @@ normalize_juliet_false_scoring = False
 TOOL_NAME = 'fortify'
 XML_OUTPUT_DIR = 'xmls'
 WID_DELIMITER_FORTIFY = ':'
-LANG = 'c'
 
 
 def format_workbook():
@@ -1626,7 +1625,6 @@ if __name__ == '__main__':
 
     # create scorecard from vendor input file
     time = strftime('scorecard-fortify-' + LANG + '_%m-%d-%Y_%H.%M.%S' + '_suite_' + str(suite_number).zfill(2))
-    # vendor_input = os.path.join(suite_path, 'vendor-input-' + TOOL_NAME + '-c.xlsx')
     vendor_input = os.path.join(suite_path, 'vendor-input-' + TOOL_NAME + '-' + LANG + '.xlsx')
     scorecard = os.path.join(suite_path, time) + '.xlsx'
     shutil.copyfile(vendor_input, scorecard)

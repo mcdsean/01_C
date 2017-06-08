@@ -1,5 +1,5 @@
-[Thu Jun  8 10:40:12 2017] --- STARTED SCORING ---
-[Thu Jun  8 10:40:12 2017] C:\01_C\xmls already exists. Cleaning before use...
+[Thu Jun  8 15:14:01 2017] --- STARTED SCORING ---
+[Thu Jun  8 15:14:01 2017] C:\01_C\xmls already exists. Cleaning before use...
 PROJECT FILE--- C:\01_C\scans\juliet_03-04-17_11-15-PM\T\HP_Fortify.Suite_01_C.2017-03-04.CWE121_s01.fpr
 PROJECT FILE--- C:\01_C\scans\juliet_03-04-17_11-15-PM\T\HP_Fortify.Suite_01_C.2017-03-04.CWE121_s02.fpr
 PROJECT FILE--- C:\01_C\scans\juliet_03-04-17_11-15-PM\T\HP_Fortify.Suite_01_C.2017-03-04.CWE121_s03.fpr
@@ -3263,4 +3263,4 @@ Collecting Hit Data for: CWE789_s01_T_juliet.xml
 Collecting Hit Data for: CWE843_F_juliet.xml
 Collecting Hit Data for: CWE843_T_juliet.xml
 Writing hit data to sheet ... please stand by, thank you for your patience!
-[Thu Jun  8 10:45:42 2017] --- FINISHED SCORING ---
+[Thu Jun  8 15:19:41 2017] --- FINISHED SCORING ---

@@ -6,6 +6,7 @@ FVDL_NAME = "audit.fvdl"
 # todo: this will need to be firmly defined
 SCORE_THRESHOLD_UNWEIGHTED = 0.45
 SCORE_THRESHOLD_WEIGHTED = 0.45
+LANG = 'c'
 
 
 class TestCase(object):
@@ -55,7 +56,8 @@ class TestCase(object):
                 for file in files:
                     opp_count = 0
                     # get file(s) associated with this test case and find opps
-                    if file.startswith(test_case_name.rsplit('/', 1)[1]) and file.endswith('.c'):
+                    # if file.startswith(test_case_name.rsplit('/', 1)[1]) and file.endswith('.c'):
+                    if file.startswith(test_case_name.rsplit('/', 1)[1]) and file.endswith(LANG):
                         # read thru the entire test case file and look for 'good...()' function calls (i.e. opportunities)
                         with open(root + "\\" + file, 'r') as inF:
                             for line in inF:
@@ -326,7 +328,8 @@ class Suite(object):
                         test_case_files.append(file)
                         # print('JULIET TEST CASE FILE', file)
                     elif tc_type == 'kdm':
-                        if not file.endswith(".h") and not file.endswith("_a.c") and not file.endswith(
+                        # if not file.endswith(".h") and not file.endswith("_a.c") and not file.endswith(".obj") and file.startswith("SFP"):
+                        if not file.endswith(".h") and not file.endswith("_a." + LANG) and not file.endswith(
                                 ".obj") and file.startswith("SFP"):
                             test_case_files.append(file)
                             # print('KDM TEST CASE FILE', file)
