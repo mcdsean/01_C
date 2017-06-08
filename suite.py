@@ -321,10 +321,12 @@ class Suite(object):
         for root, dirs, files in os.walk(tc_path):
 
             for file in files:
-                if file.endswith(tc_lang):
+                if file.endswith(tc_lang) and 'CWE' in file:
                     if tc_type == 'juliet':
                         # reduce filename to test case name by removing variant and file extension
-                        file = re.sub('[_,a-z]*\.\w+$', '', file)
+                        # file = re.sub('[a-z]?\.\w+$', '', file)
+                        # todo 06/08/17 test this in the 'c' version and update it if it works
+                        file = re.sub('([a-z]?\.\w+$)|(_good.*$)|(_bad.*$)', '', file)
                         test_case_files.append(file)
                         print('JULIET TEST CASE FILE', file)
                     elif tc_type == 'kdm':
