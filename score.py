@@ -1625,7 +1625,6 @@ if __name__ == '__main__':
         normalize_juliet_false_scoring = False
 
     # create scorecard from vendor input file
-    # time = strftime('scorecard-fortify-c_%m-%d-%Y_%H.%M.%S' + '_suite_' + str(suite_number).zfill(2))
     time = strftime('scorecard-fortify-' + LANG + '_%m-%d-%Y_%H.%M.%S' + '_suite_' + str(suite_number).zfill(2))
     # vendor_input = os.path.join(suite_path, 'vendor-input-' + TOOL_NAME + '-c.xlsx')
     vendor_input = os.path.join(suite_path, 'vendor-input-' + TOOL_NAME + '-' + LANG + '.xlsx')
