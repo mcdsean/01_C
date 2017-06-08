@@ -1676,4 +1676,4 @@ if __name__ == '__main__':
     wb.active = 0
     wb.save(scorecard)
 
-    py_common.print_with_timestamp('--- FINISHED SCORING ---')
+    py_common.print_with_timestamp('--- FINISHED SCORING --- ' + LANG)
