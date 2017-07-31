@@ -57,24 +57,54 @@ class TestCase(object):
                     opp_count = 0
                     # get file(s) associated with this test case and find opps
                     # if file.startswith(test_case_name.rsplit('/', 1)[1]) and file.endswith('.c'):
-                    if file.startswith(test_case_name.rsplit('/', 1)[1]) and file.endswith(LANG):
-                        # read thru the entire test case file and look for 'good...()' function calls (i.e. opportunities)
-                        with open(root + "\\" + file, 'r') as inF:
-                            for line in inF:
-                                # if 'good...()' in line:
-                                if line.lstrip().startswith('good') and line.rstrip().endswith('();') \
-                                        and 'Source' not in line and 'Sink' not in line:
-                                    opp_count += 1
-                                    self.opp_counts = opp_count
-                                    self.opp_names.append(line.strip()[:-3])
-                        ''' 
-                        stop searching the files associated wtih this test case since the opp info has been 
-                        found and it only occurs in one file 
-                        '''
-                        if opp_count != 0:
-                            # pad for even display
-                            self.opp_names = self.opp_names + [''] * (4 - len(self.opp_names))
-                            break
+                    # if file.startswith(test_case_name.rsplit('/', 1)[1]) and file.endswith(LANG):
+                    # todo: 06/14/17 need to test this with the c test cases
+                    if LANG == 'c':
+                        if file.startswith(test_case_name.rsplit('/', 1)[1]) and file.endswith(LANG):
+                            # read thru the entire test case file and look for 'good...()' function calls (i.e. opportunities)
+                            with open(root + "\\" + file, 'r') as inF:
+                                for line in inF:
+                                    # todo: 6/14/17 for c++, we have multiple good()'s
+                                    # if 'good...()' in line:
+                                    if line.lstrip().startswith('good') and line.rstrip().endswith('();') \
+                                            and 'Source' not in line and 'Sink' not in line:
+                                        opp_count += 1
+                                        self.opp_counts = opp_count
+                                        self.opp_names.append(line.strip()[:-3])
+                            ''' 
+                            stop searching the files associated wtih this test case since the opp info has been 
+                            found and it only occurs in one file 
+                            '''
+                            if opp_count != 0:
+                                # pad for even display
+                                self.opp_names = self.opp_names + [''] * (4 - len(self.opp_names))
+                                break
+                    elif LANG == 'cpp':
+                        # get the single file in this test case that contains the opp counts
+                        if file.startswith(test_case_name.rsplit('/', 1)[1]) and file.endswith(LANG) \
+                                and '_bad' not in file and '_goodG2B' not in file and '_goodB2G' not in file:
+
+                            # read thru the entire test case file and look for 'good...()' function calls (i.e. opportunities)
+                            with open(root + "\\" + file, 'r') as inF:
+                                line_content = []
+                                for line in inF:
+                                    # todo: 6/14/17 for c++, we have multiple good()'s
+                                    # if 'good...()' in line:
+                                    if line.lstrip().startswith('good') and line.rstrip().endswith('();') \
+                                            and 'Source' not in line and 'Sink' not in line and 'good()' not in line:
+                                        line_content.append(line)
+                                        opp_count += 1
+                                        self.opp_counts = opp_count
+                                        self.opp_names.append(line.strip()[:-3])
+                            ''' 
+                            stop searching the files associated wtih this test case since the opp info has been 
+                            found and it only occurs in one file 
+                            '''
+                            print('FILE_WITH_OPP*****', file, 'OPP_COUNT*****', opp_count)
+                            if opp_count != 0:
+                                # pad for even display
+                                self.opp_names = self.opp_names + [''] * (4 - len(self.opp_names))
+                                break
 
         else:
             self.opp_counts = 1
@@ -323,12 +353,12 @@ class Suite(object):
             for file in files:
                 if file.endswith(tc_lang) and 'CWE' in file:
                     if tc_type == 'juliet':
+                        print('JULIET TEST CASE FILE', file)
                         # reduce filename to test case name by removing variant and file extension
                         # file = re.sub('[a-z]?\.\w+$', '', file)
-                        # todo 06/08/17 test this in the 'c' version and update it if it works
+                        #todo 06/08/17 test this in the 'c' version and update it if it works
                         file = re.sub('([a-z]?\.\w+$)|(_good.*$)|(_bad.*$)', '', file)
                         test_case_files.append(file)
-                        print('JULIET TEST CASE FILE', file)
                     elif tc_type == 'kdm':
                         # if not file.endswith(".h") and not file.endswith("_a.c") and not file.endswith(".obj") and file.startswith("SFP"):
                         if not file.endswith(".h") and not file.endswith("_a." + LANG) and not file.endswith(

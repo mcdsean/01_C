@@ -228,6 +228,8 @@ def score_xmls(suite_dat):
             line_number = vuln.find(schemas['line_number_schema'], ns).attrib[schemas['line_number_attrib']]
             function_name = vuln.find(schemas['function_name_schema'], ns).attrib[schemas['function_name_attrib']]
 
+            print('FUNCTINO_NAME__________', function_name)
+
             # 3. get all pieces of the wid for this row in the xml
             for idx, weakness_id in enumerate(weakness_id_schemas):
                 wid_piece = vuln.find(weakness_id_schemas[idx], ns)
@@ -256,20 +258,32 @@ def score_xmls(suite_dat):
                         test_case_files.append([file_path, int(line_number)])
 
                         if test_case_type == 'juliet':
-                            test_case_name = re.sub('[a-z]?\.\w+$', '', file_path)
-                            # reduce juliet function name to 'good ...' portion
-                            function_name = function_name.rpartition('_')[2]
+                            if LANG == 'c':
+                                test_case_name = re.sub('[a-z]?\.\w+$', '', file_path)
+                                # reduce juliet function name to 'good ...' portion
+                                function_name = function_name.rpartition('_')[2]
+                            elif LANG == 'cpp':
+                                test_case_name = re.sub('([a-z]?\.\w+$)|(_good.*)|(_bad.*)', '', file_path)
+                                # test_case_name = re.sub('([a-z]?\.\w+$)', '', file_path)
+                                print('TEST_CASE_FULL_FILE_NAME_============', test_case_name)
+                                # reduce juliet function name to 'good ...' portion
+                                if function_name == 'action':
+                                    function_name = file_path.rpartition('_')[2][:-4]
+                                else:
+                                    function_name = function_name.rpartition('_')[2]
 
                         elif test_case_type == 'kdm':
                             # todo: 5/5/17 reduce kdm name for display in ws3 (similar to juliet above)
                             test_case_name = re.sub('[_a]?\.\w+$', '', file_path)
                         else:
+                            print('ERROR: NO TEST CASE NAME FOUND')
                             test_case_name = ''
 
                         file_paths.append(file_path)
 
                         if test_case_name not in test_cases:
                             # create a new test case object
+                            print('CPP_TEST_CASE_NAME_FIRST_OCCURRANCE________', test_case_name)
                             new_tc_obj = TestCase(test_case_name, xml_project.tc_type, xml_project.true_false)
                             new_tc_obj.hit_data.append([file_path, line_number, function_name])
                             test_case_objects.append(new_tc_obj)
@@ -286,6 +300,7 @@ def score_xmls(suite_dat):
                             # update existing test case object
                             for test_case_object in test_case_objects:
                                 if test_case_object.test_case_name == test_case_name:
+                                    print('CPP_TEST_CASE_NAME_NOT_FIRST_OCCURRANCE________', test_case_name)
                                     hit_data = getattr(test_case_object, 'hit_data')
                                     hit_data.append([file_path, line_number, function_name])
                                     # update the number of hits for this test case
@@ -310,7 +325,7 @@ def score_xmls(suite_dat):
         setattr(xml_project, 'used_wids', used_wids)
         setattr(xml_project, 'test_case_files_that_hit', file_paths)
 
-        print('SCORE:', score)
+        print('XML_PROJECT_NAME:', xml_project.new_xml_name, 'SCORE:', score)
 
 
 def calculate_test_case_score(test_case_obj):
@@ -319,7 +334,7 @@ def calculate_test_case_score(test_case_obj):
         valid_hits.append(valid_hit_data[2])
     score = len(set(valid_hits))
     test_case_obj.score = score
-    # todo: 5/5/7 should i tally up the soores here per xml?
+    # todo: 5/5/7 should i tally up the scores here per xml?
     # todo: 5/5/7 only calculate for juliet false?
 
     ####################################
@@ -330,8 +345,11 @@ def calculate_test_case_score(test_case_obj):
 
 
 def calculate_test_case_percent_hits(test_case_obj):
-    percent = test_case_obj.score / test_case_obj.opp_counts
-    test_case_obj.percent = percent
+    if test_case_obj.opp_counts == 0:
+        print('HITS_WITH_NO_OPPS', test_case_obj.test_case_name)
+    else:
+        percent = test_case_obj.score / test_case_obj.opp_counts
+        test_case_obj.percent = percent
 
 
 def collect_hit_data(suite_dat):
@@ -341,7 +359,7 @@ def collect_hit_data(suite_dat):
     # collect all valid hit data to be displayed
     for xml_project in suite_dat.xml_projects:
         test_case_objects = xml_project.test_cases
-        # print('collecting hit data for project-----', xml_project.new_xml_name)
+        print('collecting hit data for project-----', xml_project.new_xml_name)
         for test_case_obj in test_case_objects:
 
             # calculate the score for this test case
@@ -371,8 +389,10 @@ def collect_hit_data(suite_dat):
                 xml_project.num_of_hits += test_case_obj.score
                 xml_project.tc_count += test_case_obj.opp_counts
         # todo: encapusalate with try/except block for divide by zero possibility (although unlikely to occur)
+        #try:
         xml_project.percent_hits = str(round((xml_project.num_of_hits / xml_project.tc_count) * 100, 1)) + ' '
-
+        # except:
+        #print('DIVIDE BY ZERO ERROR')
         print('Collecting Hit Data for:', xml_project.new_xml_name)
 
     # sort hits by file name and then line number
@@ -437,7 +457,12 @@ def group_hit_data(suite_dat, hit_data):
             suite_data.manual_review_recommendataion = ' * Manual Review Required for ' + hits1['name']
 
         # write summary data
-        percent = hits1['hits'] / hits1['opps'] * 100
+        ### todo: 06/15/17 RETURN THIS ....
+        if hits1['opps'] == 0:
+            print('HITS_WITH_NO_OPPS_1', hits1['name'])
+            percent = 0
+        else:
+            percent = hits1['hits'] / hits1['opps'] * 100
         misses = hits1['opps'] - hits1['hits']
         ws4.cell(row=idx + 2, column=1).value = hits1['name']
         ws4.cell(row=idx + 2, column=2).value = hits1['hits']
@@ -474,6 +499,7 @@ def group_hit_data(suite_dat, hit_data):
             ws4.cell(row=idx + 2, column=8).value = hits1['opps']
             ws4.cell(row=idx + 2, column=9).value = '%0.0f' % percent + '%'
 
+    # todo: temp 06/09/17
     # merge and align cells
     for col_idx, row in enumerate(hit_analytics_titles):
         if col_idx > 4:
@@ -539,6 +565,7 @@ def group_hit_data(suite_dat, hit_data):
         #############
         for i in range(2, 9):
             ws4.cell(row=idx + 2, column=i).number_format = '#,##0'
+
 
     create_hit_charts(g2b_idx, g2b_row_start)
 
@@ -675,10 +702,21 @@ def get_test_case_name(hit_data):
     test_case_type = hit_data[1]
     file_name = hit_data[3]
 
+    test_case_name = 'TEST_CASE_NAME_NOT_FOUND'
+
     if test_case_type == 'juliet':
-        test_case_name = re.sub('[a-z]?\.\w+$', '', file_name)
-    else:
+        if LANG == 'c':
+            test_case_name = re.sub('[a-z]?\.\w+$', '', file_name)
+        elif LANG == 'cpp':
+            test_case_name = re.sub('([a-z]?\.\w+$)|(_good.*)|(_bad.*)', '', file_name)
+            # test_case_name = re.sub('([a-z]?\.\w+$)', '', file_name)
+        else:
+            print('ERROR_COULD_NOT_FIND_LANG')
+
+    elif test_case_type == 'kdm':
         test_case_name = re.sub('[_a]?\.\w+$', '', file_name)
+    else:
+        print('ERROR_COULD_NOT_FIND_TYPE', test_case_type)
 
     return test_case_name
 
@@ -1676,4 +1714,4 @@ if __name__ == '__main__':
     wb.active = 0
     wb.save(scorecard)
 
-    py_common.print_with_timestamp('--- FINISHED SCORING --- ' + LANG)
+    py_common.print_with_timestamp('--- FINISHED SCORING ---')
