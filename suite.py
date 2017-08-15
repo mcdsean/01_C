@@ -3,21 +3,21 @@ import os, re, zipfile, operator
 import py_common
 
 FVDL_NAME = "audit.fvdl"
-# todo: this will need to be firmly defined
+# todo: these are arbitrary settings for now
 SCORE_THRESHOLD_UNWEIGHTED = 0.45
 SCORE_THRESHOLD_WEIGHTED = 0.45
-LANG = 'c'
-
 
 class TestCase(object):
     # def __init__(self, filename):
-    def __init__(self, test_case_name, tc_type, true_false):
+    def __init__(self, test_case_name, tc_type, true_false, tc_lang):
         # test case name
         self.test_case_name = test_case_name
         # juliet or kdm
         self.tc_type = tc_type
         # true or false
         self.true_false = true_false
+        # test case language
+        self.tc_lang = tc_lang
 
         ''' runtime attributes '''
         # FILE NAME, LINE, FUNCTION
@@ -57,10 +57,10 @@ class TestCase(object):
                     opp_count = 0
                     # get file(s) associated with this test case and find opps
                     # if file.startswith(test_case_name.rsplit('/', 1)[1]) and file.endswith('.c'):
-                    # if file.startswith(test_case_name.rsplit('/', 1)[1]) and file.endswith(LANG):
                     # todo: 06/14/17 need to test this with the c test cases
-                    if LANG == 'c':
-                        if file.startswith(test_case_name.rsplit('/', 1)[1]) and file.endswith(LANG):
+
+                    if self.tc_lang == 'c':
+                        if file.startswith(test_case_name.rsplit('/', 1)[1]) and file.endswith(self.tc_lang):
                             # read thru the entire test case file and look for 'good...()' function calls (i.e. opportunities)
                             with open(root + "\\" + file, 'r') as inF:
                                 for line in inF:
@@ -79,9 +79,9 @@ class TestCase(object):
                                 # pad for even display
                                 self.opp_names = self.opp_names + [''] * (4 - len(self.opp_names))
                                 break
-                    elif LANG == 'cpp':
+                    elif self.tc_lang == 'cpp':
                         # get the single file in this test case that contains the opp counts
-                        if file.startswith(test_case_name.rsplit('/', 1)[1]) and file.endswith(LANG) \
+                        if file.startswith(test_case_name.rsplit('/', 1)[1]) and file.endswith(self.tc_lang) \
                                 and '_bad' not in file and '_goodG2B' not in file and '_goodB2G' not in file:
 
                             # read thru the entire test case file and look for 'good...()' function calls (i.e. opportunities)
@@ -203,7 +203,7 @@ class Suite(object):
         self.overall_score_weighted = 0
         self.overall_required_threshold_weighted = SCORE_THRESHOLD_UNWEIGHTED
 
-        # todo 5/11/7 default these to 'FAIL' and ' .... does require manual review
+        # todo 5/11/7 default these to 'FAIL' and 'Some test cases require manual review'
         self.manual_review_recommendataion = ' * There are no test cases requiring manual review!'
         self.pass_fail = 'PASS'
 
@@ -355,13 +355,11 @@ class Suite(object):
                     if tc_type == 'juliet':
                         print('JULIET TEST CASE FILE', file)
                         # reduce filename to test case name by removing variant and file extension
-                        # file = re.sub('[a-z]?\.\w+$', '', file)
-                        #todo 06/08/17 test this in the 'c' version and update it if it works
                         file = re.sub('([a-z]?\.\w+$)|(_good.*$)|(_bad.*$)', '', file)
                         test_case_files.append(file)
                     elif tc_type == 'kdm':
                         # if not file.endswith(".h") and not file.endswith("_a.c") and not file.endswith(".obj") and file.startswith("SFP"):
-                        if not file.endswith(".h") and not file.endswith("_a." + LANG) and not file.endswith(
+                        if not file.endswith(".h") and not file.endswith("_a." + tc_lang) and not file.endswith(
                                 ".obj") and file.startswith("SFP"):
                             test_case_files.append(file)
                             print('KDM TEST CASE FILE', file)
@@ -370,21 +368,6 @@ class Suite(object):
 
         tc_count = len(set(test_case_files))
         setattr(self.xml_projects[projedt_id], 'tc_count', tc_count)
-
-    # def import_weakness_ids(self, scan_data_files):
-    #     cwe_weakness_ids = []
-    #
-    #     ws = wb['Weakness IDs']
-    #
-    #     # get weakness ids from duplicated vendor sheet
-    #     for row_idx in ws.iter_rows():
-    #         for cell in row_idx:
-    #             if str(cell.value) == cwe.lstrip('0'):
-    #                 for cell in row_idx:
-    #                     cwe_weakness_ids.append(cell.value)
-    #
-    #                 return cwe_weakness_ids
-
 
     def sort_by_columns(self):
 
