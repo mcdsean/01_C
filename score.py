@@ -23,11 +23,11 @@ TOOL_NAME = 'fortify'
 XML_OUTPUT_DIR = 'xmls'
 WID_DELIMITER_FORTIFY = ':'
 
+
 def format_workbook():
     hit_sheet_titles = ['CWE', 'Type', 'T/F', 'File Name', 'Line #', 'Function', 'SCORE', 'Opps', '%', 'Opportunities']
     # hit_analytics_titles = ['Encapsulating Function', 'Hits', 'Opps', '%-Hits', 'Group', 'HITS', 'OPPS', '%-grp']
 
-    # todo: can do range for all here
     # set varying col widths for sheet 1
     ws1.column_dimensions['A'].width = 8
     ws1.column_dimensions['B'].width = 8
@@ -70,6 +70,7 @@ def format_workbook():
     ws3.column_dimensions['M'].width = 12
     ws3.sheet_view.zoomScale = 70
     ws3.sheet_view.showGridLines = False
+
     # freeze first row and column
     ws3.freeze_panes = ws3['A2']
     # write column headers # todo: 5/9/7 repeat this technique for other headers
@@ -126,7 +127,6 @@ def get_schemas(suite_dat):
 
     # get xml schemas from vendor input file
     for idx, content in enumerate(tag_ids):
-
         schema = 'ns1:' + getattr(suite_dat, 'tag_info')[idx][1].replace('/', '/ns1:')
 
         # finding type
@@ -135,6 +135,7 @@ def get_schemas(suite_dat):
             if content[2].lower() == 'tag':
                 schemas['finding_type_schema'] = schema
             continue
+
         # file name
         if content[0].lower() == 'file_name':
             if content[2].lower() == 'tag':
@@ -143,6 +144,7 @@ def get_schemas(suite_dat):
                 schemas['file_name_schema'] = schema.rsplit('/', 1)[0]
                 schemas['file_name_attrib'] = schema.rsplit(':', 1)[1]
             continue
+
         # line number
         if content[0].lower() == 'line_number':
             if content[2].lower() == 'tag':
@@ -151,6 +153,7 @@ def get_schemas(suite_dat):
                 schemas['line_number_schema'] = schema.rsplit('/', 1)[0]
                 schemas['line_number_attrib'] = schema.rsplit(':', 1)[1]
             continue
+
         # function name
         if content[0].lower() == 'function_name':
             if content[2].lower() == 'tag':
@@ -159,6 +162,7 @@ def get_schemas(suite_dat):
                 schemas['function_name_schema'] = schema.rsplit('/', 1)[0]
                 schemas['function_name_attrib'] = schema.rsplit(':', 1)[1]
             continue
+
         # weakness ids
         if 'weakness' in content[0].lower():
             weakness_id_schemas.append('ns1:' + str(tag_ids[idx][1]).replace('/', '/ns1:'))
@@ -173,13 +177,12 @@ def score_xmls(suite_dat):
     schemas, weakness_id_schemas = get_schemas(suite_dat)
 
     for xml_project in suite_data.xml_projects:
-
         used_wids = []
         test_cases = []
         test_case_files = []
         file_paths = []
 
-        test_case_objects = []  # todo: new 5/2/17 CAN I MAKE THIS A SET?
+        test_case_objects = []
 
         # read namespace from the first xml since it will be the same for all other xmls
         xml_path = os.path.join(os.getcwd(), 'xmls', getattr(xml_project, 'new_xml_name'))
@@ -199,7 +202,6 @@ def score_xmls(suite_dat):
         # 1. parse thru each row in this xml looking for good wids, and get the filename & line #
         # for vuln in root.findall('./' + finding_type_schema, ns):
         for vuln in root.findall('./' + schemas['finding_type_schema'], ns):
-
             # todo: add condition for tag vs attribute; need flags in switch statement above
             del wid_pieces_that_hit[:]
 
@@ -286,7 +288,6 @@ def score_xmls(suite_dat):
                             suite_dat.suite_hit_data[name] = len(new_tc_obj.hit_data)
 
                         else:  # todo: 5/3/17, consider using a dictionary here or defaultdict for speed
-                            #    todo: 5/3/17, maybe keep a dictionary at the Suite level?
                             # update existing test case object
                             for test_case_object in test_case_objects:
                                 if test_case_object.test_case_name == test_case_name:
@@ -331,6 +332,7 @@ def calculate_test_case_score(test_case_obj):
     if test_case_obj.tc_type == 'juliet' and test_case_obj.true_false == 'FALSE':
         setattr(test_case_obj, 'score', score)
 
+
 def calculate_test_case_percent_hits(test_case_obj):
     if test_case_obj.opp_counts == 0:
         print('HITS_WITH_NO_OPPS', test_case_obj.test_case_name)
@@ -347,12 +349,13 @@ def collect_hit_data(suite_dat):
     for xml_project in suite_dat.xml_projects:
         test_case_objects = xml_project.test_cases
         print('collecting hit data for project-----', xml_project.new_xml_name)
-        for test_case_obj in test_case_objects:
 
+        for test_case_obj in test_case_objects:
             # calculate the score for this test case
             # todo: 5/5/7 we only need this for juliet, false?
             # todo: 5/5/7 bug found in sheet for juliet, true, get 200% of four hits?
             calculate_test_case_score(test_case_obj)
+
             # calculate the percent hits for this test case
             calculate_test_case_percent_hits(test_case_obj)
 
@@ -375,11 +378,12 @@ def collect_hit_data(suite_dat):
             if xml_project.tc_type == 'juliet' and xml_project.true_false == 'FALSE':
                 xml_project.num_of_hits += test_case_obj.score
                 xml_project.tc_count += test_case_obj.opp_counts
+
         # todo: encapusalate with try/except block for divide by zero possibility (although unlikely to occur)
-        #try:
+        # try:
         xml_project.percent_hits = str(round((xml_project.num_of_hits / xml_project.tc_count) * 100, 1)) + ' '
         # except:
-        #print('DIVIDE BY ZERO ERROR')
+        # print('DIVIDE BY ZERO ERROR')
         print('Collecting Hit Data for:', xml_project.new_xml_name)
 
     # sort hits by file name and then line number
@@ -389,11 +393,11 @@ def collect_hit_data(suite_dat):
 
 
 def group_hit_data(suite_dat, hit_data):
-
     list_of_dicts = []
 
     suite_data.suite_hit_data_complete = hit_data
     good_data = []
+
     # dedupe data
     for hit_dat in suite_data.suite_hit_data_complete:
         # only juliet/false have 'good...' opportunities
@@ -404,7 +408,6 @@ def group_hit_data(suite_dat, hit_data):
     good_data_unique = remove_dups(good_data)
 
     for idx, data_unique in enumerate(good_data_unique):
-
         # name of containing function
         name = data_unique[5]
         # score
@@ -434,7 +437,6 @@ def group_hit_data(suite_dat, hit_data):
 
     # write to 'hit analytics' summary sheet
     for idx, hits1 in enumerate(list_of_dicts):
-
         if 'helperGood' in hits1['name']:
             # todo: 5/11/7 log all of these and provide used more specifics w/ location, etc.
             suite_data.manual_review_recommendataion = ' * Manual Review Required for ' + hits1['name']
@@ -445,6 +447,7 @@ def group_hit_data(suite_dat, hit_data):
             percent = 0
         else:
             percent = hits1['hits'] / hits1['opps'] * 100
+
         misses = hits1['opps'] - hits1['hits']
         ws4.cell(row=idx + 2, column=1).value = hits1['name']
         ws4.cell(row=idx + 2, column=2).value = hits1['hits']
@@ -452,24 +455,26 @@ def group_hit_data(suite_dat, hit_data):
         ws4.cell(row=idx + 2, column=4).value = hits1['opps']
         ws4.cell(row=idx + 2, column=5).value = '%0.0f' % percent + '%'
         ws4.cell(row=idx + 2, column=6).value = hits1['name']
+
         # get row indexing for B2G
         if 'B2G' in hits1['name']:
             if b2g_row_start == 0:
                 b2g_row_start = idx + 2
-            b2g_idx += 1
 
+            b2g_idx += 1
             b2g_hits_total += hits1['hits']
             b2g_opps_total += hits1['opps']
             b2g_percent_total = b2g_hits_total / b2g_opps_total * 100
             ws4.cell(row=b2g_row_start, column=7).value = b2g_hits_total
             ws4.cell(row=b2g_row_start, column=8).value = b2g_opps_total
             ws4.cell(row=b2g_row_start, column=9).value = '%0.0f' % b2g_percent_total + '%'
+
         # get row indexing for G2B
         elif 'G2B' in hits1['name']:
             if g2b_row_start == 0:
                 g2b_row_start = idx + 2
-            g2b_idx += 1
 
+            g2b_idx += 1
             g2b_hits_total += hits1['hits']
             g2b_opps_total += hits1['opps']
             g2b_percent_total = g2b_hits_total / g2b_opps_total * 100
@@ -481,7 +486,6 @@ def group_hit_data(suite_dat, hit_data):
             ws4.cell(row=idx + 2, column=8).value = hits1['opps']
             ws4.cell(row=idx + 2, column=9).value = '%0.0f' % percent + '%'
 
-    # todo: temp 06/09/17
     # merge and align cells
     for col_idx, row in enumerate(hit_analytics_titles):
         if col_idx > 4:
@@ -491,7 +495,6 @@ def group_hit_data(suite_dat, hit_data):
             ws4.cell(row=3 + 1, column=10).value = ws4.cell(row=3, column=6).value
             ws4.cell(row=b2g_row_start + 1, column=10).value = ws4.cell(row=b2g_row_start, column=6).value
             ws4.cell(row=b2g_row_start + 1 + 1, column=10).value = ws4.cell(row=g2b_row_start, column=6).value
-
             ws4.cell(row=1 + 1, column=11).value = ws4.cell(row=1, column=8).value
             ws4.cell(row=2 + 1, column=11).value = ws4.cell(row=2, column=8).value
             ws4.cell(row=3 + 1, column=11).value = ws4.cell(row=3, column=8).value
@@ -546,14 +549,13 @@ def group_hit_data(suite_dat, hit_data):
         for i in range(2, 9):
             ws4.cell(row=idx + 2, column=i).number_format = '#,##0'
 
-    create_hit_charts(g2b_idx, g2b_row_start)
+    create_hit_charts()
 
     print('Writing hit data to sheet ... please stand by, thank you for your patience!')
     write_hit_data(suite_dat, hit_data)
 
 
-def create_hit_charts(g2b_idx, g2b_row_start):
-
+def create_hit_charts():
     hit_bar_chart = BarChart(gapWidth=50)
     hit_bar_chart.type = "col"
     hit_bar_chart.style = 12
@@ -564,7 +566,6 @@ def create_hit_charts(g2b_idx, g2b_row_start):
 
     g2b_data = Reference(ws4, min_col=2, min_row=1, max_row=15, max_col=2)
     hit_bar_chart.add_data(g2b_data, titles_from_data=True)
-
     g2b_data = Reference(ws4, min_col=3, min_row=1, max_row=15, max_col=3)
     hit_bar_chart.add_data(g2b_data, titles_from_data=True)
 
@@ -605,12 +606,11 @@ def create_hit_charts(g2b_idx, g2b_row_start):
     ws4.add_chart(pie, "A16")
 
 
-def update_list_of_dicts(L, name, hits, opps):
-
+def update_list_of_dicts(list_data, name, hits, opps):
     found = False
     # update the dictionary if it already exists
-    if len(L) > 0:
-        for d in L:
+    if len(list_data) > 0:
+        for d in list_data:
             if d['name'] == name:
                 d['hits'] += hits
                 d['opps'] += opps
@@ -618,9 +618,9 @@ def update_list_of_dicts(L, name, hits, opps):
                 break
     # create new dictionary in the list if it does not exists
     if not found:
-        L.append({'name': name, 'hits': hits, 'opps': opps})
+        list_data.append({'name': name, 'hits': hits, 'opps': opps})
 
-    return L
+    return list_data
 
 
 def write_hit_data(suite_dat, hit_data):
@@ -633,11 +633,8 @@ def write_hit_data(suite_dat, hit_data):
     horizontal_right = [9]
 
     for hit in hit_data:
-
         col = 1
-
         for cell in hit:
-
             # write hit data to cells in ws3
             ws3.cell(row=row + 1, column=col).value = cell
 
@@ -666,7 +663,6 @@ def write_hit_data(suite_dat, hit_data):
 
 
 def get_test_case_name(hit_data):
-
     test_case_type = hit_data[1]
     file_name = hit_data[3]
 
@@ -680,7 +676,6 @@ def get_test_case_name(hit_data):
             # test_case_name = re.sub('([a-z]?\.\w+$)', '', file_name)
         else:
             print('ERROR_COULD_NOT_FIND_LANG')
-
     elif test_case_type == 'kdm':
         test_case_name = re.sub('[_a]?\.\w+$', '', file_name)
     else:
@@ -690,7 +685,6 @@ def get_test_case_name(hit_data):
 
 
 def format_hit_data(suite_dat, hit_data, file_name_dups):
-
     row = 1
     start = 0
     group_size = 0
@@ -700,9 +694,7 @@ def format_hit_data(suite_dat, hit_data, file_name_dups):
 
     # color opportunities used(green), unused(red) or none(gray)
     for idx, hit in enumerate(hit_data):
-
         if idx == next_group_idx:
-
             found_ops_in_group = hit[9:13]
             test_case_name = get_test_case_name(hit)
 
@@ -737,7 +729,6 @@ def format_hit_data(suite_dat, hit_data, file_name_dups):
 
         # todo: 5/23/7 this needs optimized
         if hit[3] in suite_dat.duplicate_file_name_hits:
-
             if previous_file_name_and_line == list(hit[3:5]):
                 #  yellow - repeat file name and line
                 #  previous sorted file name and line are identical to this hit
@@ -747,7 +738,6 @@ def format_hit_data(suite_dat, hit_data, file_name_dups):
                         set_appearance(ws3, row + 1, hit_idx + 1, 'fg_fill', 'FFD966')  # yellow
                         # adjust previous row
                         set_appearance(ws3, row, hit_idx + 1, 'fg_fill', 'FFD966')  # yellow
-
             else:
                 # blue - unique file name and line number
                 for hit_idx, item in enumerate(hit):
@@ -761,7 +751,6 @@ def format_hit_data(suite_dat, hit_data, file_name_dups):
 
 
 def import_xml_tags(suite_dat):
-
     row = 0
 
     ws = wb.get_sheet_by_name('XML Tags')
@@ -781,7 +770,6 @@ def import_xml_tags(suite_dat):
 
 
 def remove_dups(d):
-
     new_d = []
     for x in d:
         if x not in new_d:
@@ -795,7 +783,6 @@ def write_xml_data(suite_data_details):
     #########################################################################################################
 
     row = 1
-
     attribute_list = ['cwe_id_padded', 'tc_type', 'true_false', 'tc_count', 'num_of_hits', 'percent_hits',
                       'new_xml_name', 'tc_path', 'scan_data_file']
 
@@ -827,8 +814,8 @@ def write_xml_data(suite_data_details):
                     set_appearance(ws2, i + 2, 6, 'font_color', '548235')
                     set_appearance(ws2, i + 2, j + 1, 'fg_fill', 'FFFFFF')
 
+                # highlight juliet/false test cases as opp counts (vs. TC)
                 if suite_data_details.xml_projects[i].tc_type == 'juliet':
-                    # highlight juliet/false test cases as opp counts (vs. TC)
                     set_appearance(ws2, i + 2, 4, 'font_color', '0000FF')
             else:
                 # set colors for true
@@ -885,7 +872,6 @@ def write_summary_data(scan_data, ws):
 
     # collect data for each cwe and summarize
     for cwe in unique_cwes:
-
         suite_data.unique_cwes.append(cwe)
 
         tc_t = tc_f = tp = fp = 0
@@ -945,6 +931,7 @@ def write_summary_data(scan_data, ws):
         suite_data.suite_tp_count += tp
         suite_data.suite_fp_count += fp
         suite_data.suite_cwe_count = row - 1
+
         # apply format
         for col in range(2, 5):
             ws.cell(row=row, column=col).number_format = '#,##0'
@@ -961,7 +948,7 @@ def write_summary_data(scan_data, ws):
         ws.freeze_panes = ws['N2']
         # append columns to the right of current data
         # write_unweighted_averages(suite_data, ws)
-        write_weighted_averages(suite_data, ws)
+        write_weighted_averages(ws)
         write_averages_to_summary_sheet()
         write_score_and_message_to_score_sheet(suite_data, ws)
 
@@ -981,6 +968,7 @@ def write_averages_to_summary_sheet():
     set_appearance(ws1, 1, 30, 'fg_fill', 'FFFFFF')
     ws1.cell(row=1, column=29).value = 'Pavg= ' + '%0.2f' % suite_data.precision_average_unweighted
     ws1.cell(row=1, column=30).value = 'Ravg= ' + '%0.2f' % suite_data.recall_average_unweighted
+
     # write helper col p and r averages
     for row in ws1.iter_rows():
         if row[0].value is not None and row[0].row > 1:
@@ -990,7 +978,7 @@ def write_averages_to_summary_sheet():
             set_appearance(ws1, row[0].row, 30, 'font_color', 'FFFFFF', False)
 
 
-def write_weighted_averages(suite_data, ws):
+def write_weighted_averages(ws):
     #########################################################################################
     score_sheet_titles_addendum = ['P-Wt.', 'P-Final', 'P-Avg', 'R-Wt.', 'R-Final', 'R-Avg.']
     #########################################################################################
@@ -1466,6 +1454,7 @@ def import_weakness_ids(suite_dat):
     # add weakness ids to each xml object
     for i, xml_project in enumerate(suite_dat.xml_projects):
         cwe_num = getattr(xml_project, 'cwe_num')
+
         for weakness_id in weakness_ids:
             if weakness_id[0] == cwe_num:
                 setattr(xml_project, 'acceptable_weakness_ids', weakness_id)
@@ -1521,6 +1510,7 @@ def get_unused_wids(scan_data, used_wids):
     used_values = list(used_wids.values())[0]
     acceptable_wids = list(acceptable_wids.values())[0]
     unused_wids = list(set(acceptable_wids) - set(used_values))
+
     if 'None' in unused_wids:
         unused_wids.remove('None')
 
@@ -1532,11 +1522,11 @@ def get_used_wids(scan_data):
 
     for xml_project in scan_data.xml_projects:
         cwes.append(getattr(xml_project, 'cwe_id_padded'))
+
     unique_cwes = list(set(cwes))
     unique_cwes.sort()  # todo: dont think this is necessary
 
     for cwe in unique_cwes:
-
         used_wids_per_cwe = []
 
         # go thru each project looking for this cwe
@@ -1549,7 +1539,6 @@ def get_used_wids(scan_data):
                 continue
 
         unique_used_wids_per_cwe = list(set(used_wids_per_cwe))
-
         scan_data.used_wids_per_cwe.append([cwe, unique_used_wids_per_cwe])
 
         # todo: consider appending this dict like the list
@@ -1561,7 +1550,6 @@ def get_used_wids(scan_data):
 
 
 def githash(path):
-
     s = sha1()
     with open(path + '\\score.py', 'r') as f:
         while True:
