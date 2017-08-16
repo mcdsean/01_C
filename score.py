@@ -1,5 +1,4 @@
 #
-#
 # Running this script will automatically score the KDM and Juliet test case suites
 #
 # 2016-12-01 smcdonagh@keywcorp.com: initial version
@@ -9,7 +8,7 @@ import xml.etree.ElementTree as ET
 
 from hashlib import sha1
 from time import strftime
-from suite import Suite, TestCase, LANG
+from suite import Suite, TestCase
 from operator import itemgetter
 from openpyxl import load_workbook
 from openpyxl.styles import Border, Side, PatternFill, Font, Alignment
@@ -23,7 +22,6 @@ normalize_juliet_false_scoring = False
 TOOL_NAME = 'fortify'
 XML_OUTPUT_DIR = 'xmls'
 WID_DELIMITER_FORTIFY = ':'
-
 
 def format_workbook():
     hit_sheet_titles = ['CWE', 'Type', 'T/F', 'File Name', 'Line #', 'Function', 'SCORE', 'Opps', '%', 'Opportunities']
@@ -40,11 +38,8 @@ def format_workbook():
     ws1.column_dimensions['G'].width = 8
     ws1.column_dimensions['H'].width = 22
     ws1.column_dimensions['I'].width = 8
-    # ws1.column_dimensions['AC'].width = 12 helper col for p
-    # ws1.column_dimensions['AB'].width = 12 helper col for r
     ws1.sheet_view.zoomScale = 80
     ws1.sheet_view.showGridLines = False
-    # ws1.sheet_properties.tabColor = "E6B8B7"
 
     # set varying col widths for sheet 2
     ws2.column_dimensions['A'].width = 8
@@ -58,7 +53,6 @@ def format_workbook():
     ws2.column_dimensions['I'].width = 95
     ws2.sheet_view.zoomScale = 80
     ws2.sheet_view.showGridLines = False
-    # ws2.sheet_properties.tabColor = "E6B8B7"
 
     # hit data
     ws3.column_dimensions['A'].width = 8
@@ -78,7 +72,6 @@ def format_workbook():
     ws3.sheet_view.showGridLines = False
     # freeze first row and column
     ws3.freeze_panes = ws3['A2']
-    # ws3.sheet_properties.tabColor = "E6B8B7"
     # write column headers # todo: 5/9/7 repeat this technique for other headers
     for idx, title in enumerate(hit_sheet_titles):
         set_appearance(ws3, 1, idx + 1, 'fg_fill', 'C9C9C9')
@@ -100,10 +93,6 @@ def format_workbook():
     ws4.column_dimensions['H'].width = 6
     ws4.column_dimensions['I'].width = 6
     ws4.sheet_view.showGridLines = False
-    # for idx, title in enumerate(hit_analytics_titles):
-    #     set_appearance(ws4, 1, idx + 1, 'fg_fill', 'C9C9C9')
-    #     ws4.cell(row=1, column=idx + 1).value = title
-    #     ws4.cell(row=1, column=idx + 1).alignment = Alignment(horizontal="center")
 
     # SCORE
     ws5.column_dimensions['A'].width = 8
@@ -258,11 +247,11 @@ def score_xmls(suite_dat):
                         test_case_files.append([file_path, int(line_number)])
 
                         if test_case_type == 'juliet':
-                            if LANG == 'c':
+                            if suite_language == 'c':
                                 test_case_name = re.sub('[a-z]?\.\w+$', '', file_path)
                                 # reduce juliet function name to 'good ...' portion
                                 function_name = function_name.rpartition('_')[2]
-                            elif LANG == 'cpp':
+                            elif suite_language == 'cpp':
                                 test_case_name = re.sub('([a-z]?\.\w+$)|(_good.*)|(_bad.*)', '', file_path)
                                 # test_case_name = re.sub('([a-z]?\.\w+$)', '', file_path)
                                 print('TEST_CASE_FULL_FILE_NAME_============', test_case_name)
@@ -284,7 +273,8 @@ def score_xmls(suite_dat):
                         if test_case_name not in test_cases:
                             # create a new test case object
                             print('CPP_TEST_CASE_NAME_FIRST_OCCURRANCE________', test_case_name)
-                            new_tc_obj = TestCase(test_case_name, xml_project.tc_type, xml_project.true_false)
+                            new_tc_obj = TestCase(test_case_name, xml_project.tc_type, xml_project.true_false,
+                                                  suite_language)
                             new_tc_obj.hit_data.append([file_path, line_number, function_name])
                             test_case_objects.append(new_tc_obj)
 
@@ -337,12 +327,9 @@ def calculate_test_case_score(test_case_obj):
     # todo: 5/5/7 should i tally up the scores here per xml?
     # todo: 5/5/7 only calculate for juliet false?
 
-    ####################################
     # todo: 5/5/7 NEW ... needs verified
     if test_case_obj.tc_type == 'juliet' and test_case_obj.true_false == 'FALSE':
         setattr(test_case_obj, 'score', score)
-        ####################################
-
 
 def calculate_test_case_percent_hits(test_case_obj):
     if test_case_obj.opp_counts == 0:
@@ -402,7 +389,6 @@ def collect_hit_data(suite_dat):
 
 
 def group_hit_data(suite_dat, hit_data):
-    ##############################
 
     list_of_dicts = []
 
@@ -418,8 +404,6 @@ def group_hit_data(suite_dat, hit_data):
     good_data_unique = remove_dups(good_data)
 
     for idx, data_unique in enumerate(good_data_unique):
-        # for idx1, cell_dat in enumerate(data_unique):
-        #     ws6.cell(row=idx + 1, column=idx1 + 1).value = data_unique[idx1]  # todo: temp for debug
 
         # name of containing function
         name = data_unique[5]
@@ -437,7 +421,6 @@ def group_hit_data(suite_dat, hit_data):
     g2b_hits_total, b2g_hits_total = 0, 0
     g2b_opps_total, b2g_opps_total = 0, 0
 
-    #################################
     hit_analytics_titles = ['Encapsulating Function', 'Hits', 'Misses', 'Opps', '%-Hits', 'Group', 'HITS', 'OPPS',
                             '%-grp']
     for idx, title in enumerate(hit_analytics_titles):
@@ -457,7 +440,6 @@ def group_hit_data(suite_dat, hit_data):
             suite_data.manual_review_recommendataion = ' * Manual Review Required for ' + hits1['name']
 
         # write summary data
-        ### todo: 06/15/17 RETURN THIS ....
         if hits1['opps'] == 0:
             print('HITS_WITH_NO_OPPS_1', hits1['name'])
             percent = 0
@@ -524,7 +506,6 @@ def group_hit_data(suite_dat, hit_data):
                                                                                   vertical='center')
             ws4.cell(row=g2b_row_start, column=col_idx + 1).alignment = Alignment(horizontal="center",
                                                                                   vertical='center')
-
     # color cells
     for idx, hits1 in enumerate(list_of_dicts):
         ws4.cell(row=idx + 2, column=4).alignment = Alignment(horizontal="right", vertical='center')
@@ -562,10 +543,8 @@ def group_hit_data(suite_dat, hit_data):
                 else:
                     set_appearance(ws4, idx + 2, col_idx + 1, 'fg_fill', 'FFFFFF')  # white
 
-        #############
         for i in range(2, 9):
             ws4.cell(row=idx + 2, column=i).number_format = '#,##0'
-
 
     create_hit_charts(g2b_idx, g2b_row_start)
 
@@ -574,8 +553,8 @@ def group_hit_data(suite_dat, hit_data):
 
 
 def create_hit_charts(g2b_idx, g2b_row_start):
-    hit_bar_chart = BarChart(gapWidth=50)
 
+    hit_bar_chart = BarChart(gapWidth=50)
     hit_bar_chart.type = "col"
     hit_bar_chart.style = 12
     hit_bar_chart.grouping = "stacked"
@@ -596,11 +575,6 @@ def create_hit_charts(g2b_idx, g2b_row_start):
     s5 = hit_bar_chart.series[1]
     s5.graphicalProperties.line.solidFill = '000000'
     s5.graphicalProperties.solidFill = 'F8CBAD'  # light orange
-
-    # pt = DataPoint(idx=7) todo: keep this for coloring the groups!
-    # #pt.graphicalProperties.pattFill = PatternFillProperties(prst="ltHorz")
-    # pt.graphicalProperties.solidFill = 'FF0000'  # red
-    # s5.dPt.append(pt)
 
     cats = Reference(ws4, min_col=1, min_row=2, max_row=15)
     hit_bar_chart.set_categories(cats)
@@ -628,15 +602,11 @@ def create_hit_charts(g2b_idx, g2b_row_start):
     pt.graphicalProperties.solidFill = 'BFBFBF'  # gray
     s55.dPt.append(pt)
 
-    # todo keep for now as reference
-    # Cut the first slice out of the pie
-    # slice = DataPoint(idx=0, explosion=20)
-    # pie.series[0].data_points = [slice]
-
     ws4.add_chart(pie, "A16")
 
 
 def update_list_of_dicts(L, name, hits, opps):
+
     found = False
     # update the dictionary if it already exists
     if len(L) > 0:
@@ -686,10 +656,7 @@ def write_hit_data(suite_dat, hit_data):
         # identify the duplicate files #todo: maybe do this when they come in? are they in order though?
         if hit[3] in file_seen:
             file_name_dups.append(hit[3])
-            #############################
-            # todo: new 06/7/17
             suite_dat.duplicate_file_name_hits.add(hit[3])
-            #############################
         else:
             file_seen.add(hit[3])
 
@@ -699,15 +666,16 @@ def write_hit_data(suite_dat, hit_data):
 
 
 def get_test_case_name(hit_data):
+
     test_case_type = hit_data[1]
     file_name = hit_data[3]
 
     test_case_name = 'TEST_CASE_NAME_NOT_FOUND'
 
     if test_case_type == 'juliet':
-        if LANG == 'c':
+        if suite_language == 'c':
             test_case_name = re.sub('[a-z]?\.\w+$', '', file_name)
-        elif LANG == 'cpp':
+        elif suite_language == 'cpp':
             test_case_name = re.sub('([a-z]?\.\w+$)|(_good.*)|(_bad.*)', '', file_name)
             # test_case_name = re.sub('([a-z]?\.\w+$)', '', file_name)
         else:
@@ -722,6 +690,7 @@ def get_test_case_name(hit_data):
 
 
 def format_hit_data(suite_dat, hit_data, file_name_dups):
+
     row = 1
     start = 0
     group_size = 0
@@ -792,6 +761,7 @@ def format_hit_data(suite_dat, hit_data, file_name_dups):
 
 
 def import_xml_tags(suite_dat):
+
     row = 0
 
     ws = wb.get_sheet_by_name('XML Tags')
@@ -811,6 +781,7 @@ def import_xml_tags(suite_dat):
 
 
 def remove_dups(d):
+
     new_d = []
     for x in d:
         if x not in new_d:
@@ -890,7 +861,6 @@ def write_xml_data(suite_data_details):
 
 
 def write_summary_data(scan_data, ws):
-    # todo: 5/15/7 averages on summary are weighted, needs fixed
     #########################################################################################################
     summary_sheet_titles = ['CWE', 'TC TRUE', 'TC FALSE', 'TP', 'FP', 'Precision', 'Recall']
     #########################################################################################################
@@ -1097,7 +1067,6 @@ def write_weighted_averages(suite_data, ws):
                     suite_data.recall_average_unweighted = suite_data.recall_accumulated_values_unweighted \
                                                            / suite_data.recall_accumulated_count_unweighted
 
-    # todo 5/15/7 consolidate someo of these
     # p-avg display
     ws.merge_cells(start_row=2, start_column=offset + 3, end_row=ws.max_row, end_column=offset + 3)
     ws.cell(row=2, column=offset + 3).value = suite_data.precision_average_unweighted
@@ -1130,8 +1099,6 @@ def write_unweighted_averages(suite_data, ws):
         set_appearance(ws, row, idx + 1, 'fg_fill', 'E6B8B7')
         ws.cell(row=1, column=idx + 1).value = title
         ws.cell(row=1, column=idx + 1).alignment = Alignment(horizontal="center")
-
-    # set_cwe_weightings(suite_data)
 
     for row_idx in ws.iter_rows():
         for cell in row_idx:
@@ -1194,7 +1161,6 @@ def write_unweighted_averages(suite_data, ws):
                     suite_data.recall_average_unweighted = suite_data.recall_accumulated_values_unweighted \
                                                            / suite_data.recall_accumulated_count_unweighted
 
-    # todo 5/15/7 consolidate someo of these
     # p-avg display
     ws.merge_cells(start_row=2, start_column=offset + 3, end_row=ws.max_row, end_column=offset + 3)
     ws.cell(row=2, column=offset + 3).value = suite_data.precision_average_unweighted
@@ -1219,11 +1185,6 @@ def set_cwe_weightings(suite_dat):
         suite_dat.weightings_per_cwe_dict[cwe] = 1.0
         # todo: 5/12/7 remove this, for testing only. assumption is that
         # todo: (cont) for each cwe, same weighting applies to both precisino and recall?
-
-        # if cwe == 'CWE194':
-        #     suite_dat.weightings_per_cwe_dict[cwe] = .5
-        # else:
-        #     suite_dat.weightings_per_cwe_dict[cwe] = 0.75  # todo: 5/15/7 temp for testing
 
 
 def write_score_and_message_to_summary(ws):
@@ -1299,7 +1260,6 @@ def set_appearance(ws_id, row_id, col_id, style_id, color_id, border=True):
 
 
 def create_summary_charts():
-    #  todo: 5/15/7 this needs cleaned up
     c2 = LineChart()
     # p-avg
     # v2 = Reference(ws1, min_col=8, min_row=2, max_row=53)
@@ -1329,9 +1289,6 @@ def create_summary_charts():
     s2.graphicalProperties.line.dashStyle = 'dash'
     s2.graphicalProperties.line.width = 10000  # width in EMUs
 
-    # s2.dataLabels = DataLabelList()
-    # s2.dataLabels.showVal = True
-
     # precision
     p_chart = BarChart(gapWidth=50)
     p_chart.type = 'col'
@@ -1344,7 +1301,6 @@ def create_summary_charts():
     p_chart.add_data(recall_data, titles_from_data=True)
     recall_data = Reference(ws1, min_col=7, min_row=1, max_row=52, max_col=7)
     p_chart.add_data(recall_data, titles_from_data=True)
-    # p_chart_s1 = p_chart.series[1]
 
     # precision bars
     s5 = p_chart.series[0]
@@ -1355,34 +1311,23 @@ def create_summary_charts():
     s5.graphicalProperties.line.solidFill = 'FFFFFF'
     s5.graphicalProperties.solidFill = '93A9CF'  # light blue
 
-    # p_chart.dataLabels = DataLabelList()
-    # p_chart.dataLabels.showVal = True
-
-
     cats = Reference(ws1, min_col=1, min_row=2, max_row=52)
     p_chart.set_categories(cats)
     p_chart.shape = 4
     p_chart.title = 'Protection Profile Scores (Precision & Recall) - Unweighted'
-    # auto_axis = True
     p_chart.y_axis.scaling.min = 0
     p_chart.y_axis.scaling.max = 1
-    # p_chart.width = 45
-    # p_chart.height = 15
     p_chart.height = 13
     p_chart.width = 40
-    # p_chart.set_x_axis({'num_font':  {'rotation': 270}})
-
 
     p_chart += c2
 
     ws1.add_chart(p_chart, 'H2')
 
-    ######################
     tcc_true_bar_chart = BarChart(gapWidth=0)
     tcc_true_bar_chart.type = 'col'
     tcc_true_bar_chart.style = 5
     tcc_true_bar_chart.y_axis.title = 'Tese Case Counts (True)'
-    # tcc_true_bar_chart.x_axis.title = 'CWE Number'
 
     tcc_true_data = Reference(ws1, min_col=2, min_row=1, max_row=52, max_col=2)
     tcc_true_bar_chart.add_data(tcc_true_data, titles_from_data=True)
@@ -1391,21 +1336,15 @@ def create_summary_charts():
     s33.graphicalProperties.line.solidFill = '000000'
     s33.graphicalProperties.line.width = 1000  # width in EMUs
     s33.graphicalProperties.solidFill = 'E6B8B7'  # light red
-    # s33.graphicalProperties.solidFill = '548235'  # dark green
 
     cats = Reference(ws1, min_col=1, min_row=2, max_row=52)
     tcc_true_bar_chart.set_categories(cats)
     tcc_true_bar_chart.shape = 4
     tcc_true_bar_chart.title = 'Test Case Distribution'
-    # tcc_true_bar_chart.y_axis.scaling.min = 0
-    # tcc_true_bar_chart.y_axis.scaling.max = 1
-    # tcc_true_bar_chart.height = 15
     tcc_true_bar_chart.height = 10.4
     tcc_true_bar_chart.width = 40
 
     ws1.add_chart(tcc_true_bar_chart, 'H32')
-
-    #####################
 
 
 def create_score_charts():
@@ -1474,7 +1413,6 @@ def create_score_charts():
     p_r_bar_chart += p_r_average_line_chart
     ws5.add_chart(p_r_bar_chart, 'N2')
 
-    ######################
     tcc_true_bar_chart = BarChart(gapWidth=0)
     tcc_true_bar_chart.type = 'col'
     tcc_true_bar_chart.style = 5
@@ -1488,19 +1426,15 @@ def create_score_charts():
     s33.graphicalProperties.line.solidFill = '000000'
     s33.graphicalProperties.line.width = 1000  # width in EMUs
     s33.graphicalProperties.solidFill = 'E6B8B7'  # light red
-    # s33.graphicalProperties.solidFill = '548235'  # dark green
 
     cats = Reference(ws5, min_col=1, min_row=2, max_row=52)
     tcc_true_bar_chart.set_categories(cats)
     tcc_true_bar_chart.shape = 4
     tcc_true_bar_chart.title = 'Test Case Distribution'
-    # tcc_true_bar_chart.height = 15
     tcc_true_bar_chart.height = 11.3
     tcc_true_bar_chart.width = 40
 
     ws5.add_chart(tcc_true_bar_chart, 'N31')
-
-    #####################
 
 
 def import_weakness_ids(suite_dat):
@@ -1539,7 +1473,6 @@ def import_weakness_ids(suite_dat):
 
 
 def paint_wids_usage(used_wids, unused_wids):
-    # key = cwe
     key = list(used_wids)[0]
     key = int(key[3:].lstrip('0'))
 
@@ -1627,15 +1560,15 @@ def get_used_wids(scan_data):
         paint_wids_usage(used_wids, unused_wids)
 
 
-def githash(suite_path):
-    # todo: 6/6/7 develop this for tacking version on ws1
+def githash(path):
+
     s = sha1()
-    with open(suite_path + '\\score.py', 'r') as f:
+    with open(path + '\\score.py', 'r') as f:
         while True:
             data1 = f.read().encode('utf-8')
             if not data1:
                 break
-    file_length = os.stat(suite_path + '\\score.py').st_size
+    file_length = os.stat(path + '\\score.py').st_size
     s.update(("blob %u\0" % file_length).encode('utf-8'))
     s.update(data1)
     return s.hexdigest()
@@ -1647,11 +1580,13 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description='A script used to score all SCA tools.')
     # required
+    parser.add_argument('language', help='The language being scanned (i.e. c, cpp or java)', type=str)
     parser.add_argument('suite', help='The suite number being scanned (i.e. 1 - 10)', type=int)
     # optional
     parser.add_argument('-n', dest='normalize', action='store_true', help='Enter \'\-n\' option for normalized score')
 
     args = parser.parse_args()
+    suite_language = args.language
     suite_number = args.suite
     suite_path = os.getcwd()
     scaned_data_path = os.path.join(suite_path, 'scans')
@@ -1662,12 +1597,11 @@ if __name__ == '__main__':
         normalize_juliet_false_scoring = False
 
     # create scorecard from vendor input file
-    time = strftime('scorecard-fortify-' + LANG + '_%m-%d-%Y_%H.%M.%S' + '_suite_' + str(suite_number).zfill(2))
-    vendor_input = os.path.join(suite_path, 'vendor-input-' + TOOL_NAME + '-' + LANG + '.xlsx')
+    time = strftime(
+        'scorecard-fortify-' + suite_language + '_%m-%d-%Y_%H.%M.%S' + '_suite_' + str(suite_number).zfill(2))
+    vendor_input = os.path.join(suite_path, 'vendor-input-' + TOOL_NAME + '-' + suite_language + '.xlsx')
     scorecard = os.path.join(suite_path, time) + '.xlsx'
     shutil.copyfile(vendor_input, scorecard)
-
-    # todo: 5/6/7 create argument for all files in the project
 
     # get hash of score files for rev suffix
     git_hash = githash(suite_path)
@@ -1679,7 +1613,6 @@ if __name__ == '__main__':
     ws3 = wb.create_sheet('Hit Data', 2)
     ws4 = wb.create_sheet('Hit Analytics', 3)
     ws5 = wb.create_sheet('SCORE', 4)
-    # ws6 = wb.create_sheet('TEMP', 5)
 
     format_workbook()
 
@@ -1697,10 +1630,8 @@ if __name__ == '__main__':
     get_used_wids(suite_data)
 
     # write to sheets
-    # ---------------
     collect_hit_data(suite_data)
     write_xml_data(suite_data)
-    # ---------------
 
     # summary sheet
     write_summary_data(suite_data, ws1)

@@ -8,8 +8,8 @@ SCORE_THRESHOLD_UNWEIGHTED = 0.45
 SCORE_THRESHOLD_WEIGHTED = 0.45
 
 class TestCase(object):
-    # def __init__(self, filename):
     def __init__(self, test_case_name, tc_type, true_false, tc_lang):
+
         # test case name
         self.test_case_name = test_case_name
         # juliet or kdm
@@ -28,7 +28,7 @@ class TestCase(object):
            1           x                Yellow
            0                            White (Unique)
         '''
-        # todo: for coloring, need to develop. currently works as is but needs to be more efficient
+
         self.hit_data_match_levels = {}
 
         # enclosing function of hit
@@ -111,6 +111,7 @@ class TestCase(object):
             self.opp_names.extend(['N/A', '', '', ''])
 
     def update_match_levels(self, file_name):
+
         # todo: calculate the match level
         self.hit_data_match_levels = {file_name: 1}
 
@@ -141,6 +142,7 @@ class Xml(object):
 
 class Suite(object):
     def __init__(self, source_path, dest_path, tool_name):
+
         self.source_path = source_path
         self.dest_path = dest_path
         self.tool_name = tool_name
@@ -220,12 +222,14 @@ class Suite(object):
         self.sort_by_columns()
 
     def clear_totals(self):
+
         self.suite_tc_count_true = 0
         self.suite_tc_count_false = 0
         self.suite_tp_count = 0
         self.suite_fp_count = 0
 
     def create_xml_dir(self):
+
         # create, or empty, 'xmls' folder
         #
         # Note: Deleting entire folder and then re-creating it immediately sometimes conflicts
@@ -344,6 +348,7 @@ class Suite(object):
                     break
 
     def count_test_cases(self, projedt_id, tc_path):
+
         test_case_files = []
 
         tc_type = getattr(self.xml_projects[projedt_id], 'tc_type')
