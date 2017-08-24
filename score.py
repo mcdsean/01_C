@@ -62,17 +62,14 @@ def format_workbook():
     ws3.sheet_view.showGridLines = False
     ws4.sheet_view.showGridLines = False
     ws5.sheet_view.showGridLines = False
-    # freeze vertical & horizontal panes
-    ws1.freeze_panes = ws1['H2']
+    # freeze panes
     ws2.freeze_panes = ws2['B2']
     ws3.freeze_panes = ws3['A2']
     ws4.freeze_panes = ws4['A2']
     ws5.freeze_panes = ws5['N2']
     # merge 'Opportunities' title cells
     ws3.merge_cells('J1:M1')
-
-
-    # todo consider hiding the helper columns for average
+    # hide helper columns
     for col in ['AC', 'AD']:
         ws1.column_dimensions[col].hidden = True
 
@@ -146,7 +143,7 @@ def score_xmls(suite_dat):
         xml_path = os.path.join(os.getcwd(), 'xmls', getattr(xml_project, 'new_xml_name'))
         tree = elemTree.parse(xml_path)
         root = tree.getroot()
-        ns["ns1"] = root.tag.split("}")[0].replace('{', '')
+        ns['ns1'] = root.tag.split('}')[0].replace('{', '')
 
         setattr(suite_dat, 'name_space', ns)  # todo: we only need this one time
 
@@ -387,11 +384,11 @@ def group_hit_data(suite_dat, hit_data):
     for idx, title in enumerate(hit_analytics_titles):
         set_appearance(ws4, 1, idx + 1, 'fg_fill', 'C9C9C9')
         ws4.cell(row=1, column=idx + 1).value = title
-        ws4.cell(row=1, column=4).alignment = Alignment(horizontal="center")
+        ws4.cell(row=1, column=4).alignment = Alignment(horizontal='center')
         if idx > 4:
-            ws4.cell(row=1, column=idx).alignment = Alignment(horizontal="center")
-            ws4.cell(row=2, column=idx).alignment = Alignment(horizontal="center")
-            ws4.cell(row=3, column=idx).alignment = Alignment(horizontal="center")
+            ws4.cell(row=1, column=idx).alignment = Alignment(horizontal='center')
+            ws4.cell(row=2, column=idx).alignment = Alignment(horizontal='center')
+            ws4.cell(row=3, column=idx).alignment = Alignment(horizontal='center')
 
     # write to 'hit analytics' summary sheet
     for idx, hits1 in enumerate(list_of_dicts):
@@ -463,15 +460,15 @@ def group_hit_data(suite_dat, hit_data):
                             end_column=col_idx + 1)
             ws4.merge_cells(start_row=g2b_row_start, start_column=col_idx + 1, end_row=g2b_row_start + g2b_idx - 1,
                             end_column=col_idx + 1)
-            ws4.cell(row=b2g_row_start, column=col_idx + 1).alignment = Alignment(horizontal="center",
+            ws4.cell(row=b2g_row_start, column=col_idx + 1).alignment = Alignment(horizontal='center',
                                                                                   vertical='center')
-            ws4.cell(row=g2b_row_start, column=col_idx + 1).alignment = Alignment(horizontal="center",
+            ws4.cell(row=g2b_row_start, column=col_idx + 1).alignment = Alignment(horizontal='center',
                                                                                   vertical='center')
     # color cells
     for idx, hits1 in enumerate(list_of_dicts):
-        ws4.cell(row=idx + 2, column=4).alignment = Alignment(horizontal="right", vertical='center')
-        ws4.cell(row=idx + 2, column=5).alignment = Alignment(horizontal="center", vertical='center')
-        ws4.cell(row=idx + 2, column=6).alignment = Alignment(horizontal="center", vertical='center')
+        ws4.cell(row=idx + 2, column=4).alignment = Alignment(horizontal='right', vertical='center')
+        ws4.cell(row=idx + 2, column=5).alignment = Alignment(horizontal='center', vertical='center')
+        ws4.cell(row=idx + 2, column=6).alignment = Alignment(horizontal='center', vertical='center')
         # todo: consolidate these coloring methods
         if 'B2G' in hits1['name']:
             for col_idx, val in enumerate(hit_analytics_titles):
@@ -515,9 +512,9 @@ def group_hit_data(suite_dat, hit_data):
 
 def create_hit_charts():
     hit_bar_chart = BarChart(gapWidth=50)
-    hit_bar_chart.type = "col"
+    hit_bar_chart.type = 'col'
     hit_bar_chart.style = 12
-    hit_bar_chart.grouping = "stacked"
+    hit_bar_chart.grouping = 'stacked'
     hit_bar_chart.overlap = 100
     hit_bar_chart.title = 'Function Hits vs. Opportunities (Juliet/False Only)'
     hit_bar_chart.y_axis.title = 'Total Hits per Group'
@@ -545,7 +542,7 @@ def create_hit_charts():
     pie = PieChart()
     pie.height = 10
     pie.width = 13.9
-    pie.title = "Hits by Group"
+    pie.title = 'Hits by Group'
 
     labels = Reference(ws4, min_col=10, min_row=3, max_row=6)
     # data = Reference(ws4, min_col=11, max_col =12, min_row=2, max_row=6)
@@ -561,7 +558,7 @@ def create_hit_charts():
     pt.graphicalProperties.solidFill = 'BFBFBF'  # gray
     s55.dPt.append(pt)
 
-    ws4.add_chart(pie, "A16")
+    ws4.add_chart(pie, 'A16')
 
 
 def update_list_of_dicts(list_data, name, hits, opps):
@@ -598,9 +595,9 @@ def write_hit_data(suite_dat, hit_data):
 
             # set the alignment based on column
             if col in horizontal_right:
-                ws3.cell(row=row + 1, column=col).alignment = Alignment(horizontal="right", vertical='center')
+                ws3.cell(row=row + 1, column=col).alignment = Alignment(horizontal='right', vertical='center')
             elif col not in horizontal_left:
-                ws3.cell(row=row + 1, column=col).alignment = Alignment(horizontal="center", vertical='center')
+                ws3.cell(row=row + 1, column=col).alignment = Alignment(horizontal='center', vertical='center')
 
             # put border around non-opp cells; they will be formated later
             if col < 10:
@@ -748,7 +745,7 @@ def write_xml_data(suite_data_details):
     for idx, title in enumerate(detail_sheet_titles):
         set_appearance(ws2, row, idx + 1, 'fg_fill', 'C9C9C9')
         ws2.cell(row=1, column=idx + 1).value = title
-        ws2.cell(row=1, column=idx + 1).alignment = Alignment(horizontal="center")
+        ws2.cell(row=1, column=idx + 1).alignment = Alignment(horizontal='center')
 
     # write xml data
     for j, attrib in enumerate(attribute_list):
@@ -795,11 +792,11 @@ def write_xml_data(suite_data_details):
 
             # align columns
             if j == 1 or j == 2:
-                ws2.cell(row=i + 2, column=j + 1).alignment = Alignment(horizontal="center")
+                ws2.cell(row=i + 2, column=j + 1).alignment = Alignment(horizontal='center')
             elif j == 6 or j == 7 or j == 8:
-                ws2.cell(row=i + 2, column=j + 1).alignment = Alignment(horizontal="left")
+                ws2.cell(row=i + 2, column=j + 1).alignment = Alignment(horizontal='left')
             else:
-                ws2.cell(row=i + 2, column=j + 1).alignment = Alignment(horizontal="right")
+                ws2.cell(row=i + 2, column=j + 1).alignment = Alignment(horizontal='right')
 
 
 def write_summary_data(scan_data, ws):
@@ -817,7 +814,7 @@ def write_summary_data(scan_data, ws):
     for idx, title in enumerate(summary_sheet_titles):
         set_appearance(ws, row, idx + 1, 'fg_fill', 'E6B8B7')
         ws.cell(row=1, column=idx + 1).value = title
-        ws.cell(row=1, column=idx + 1).alignment = Alignment(horizontal="center")
+        ws.cell(row=1, column=idx + 1).alignment = Alignment(horizontal='center')
 
     for xml_project in scan_data.xml_projects:
         cwes.append(getattr(xml_project, 'cwe_id_padded'))
@@ -894,6 +891,7 @@ def write_summary_data(scan_data, ws):
 
     # summary sheet
     if ws == ws1:
+        ws.freeze_panes = ws['H2']
         write_score_and_message_to_summary(ws)
         # write_unweighted_averages(suite_data, ws)
 
@@ -944,7 +942,7 @@ def write_weighted_averages(ws):
         idx += offset
         set_appearance(ws, row, idx + 1, 'fg_fill', 'E6B8B7')
         ws.cell(row=1, column=idx + 1).value = title
-        ws.cell(row=1, column=idx + 1).alignment = Alignment(horizontal="center")
+        ws.cell(row=1, column=idx + 1).alignment = Alignment(horizontal='center')
 
     set_cwe_weightings(suite_data)
 
@@ -958,13 +956,13 @@ def write_weighted_averages(ws):
                     # p-wt.
                     ws.cell(row=cell.row, column=offset + 1).value = weight
                     ws.cell(row=cell.row, column=offset + 1).number_format = '0.00'
-                    ws.cell(row=cell.row, column=offset + 1).alignment = Alignment(horizontal="right")
+                    ws.cell(row=cell.row, column=offset + 1).alignment = Alignment(horizontal='right')
                     set_appearance(ws, cell.row, offset + 1, 'fg_fill', 'DDEBF7')  # light blue
                     set_appearance(ws, cell.row, offset + 1, 'font_color', '833C0C')  # dark brown
                     # r-wt.
                     ws.cell(row=cell.row, column=offset + 4).value = weight
                     ws.cell(row=cell.row, column=offset + 4).number_format = '0.00'
-                    ws.cell(row=cell.row, column=offset + 4).alignment = Alignment(horizontal="right")
+                    ws.cell(row=cell.row, column=offset + 4).alignment = Alignment(horizontal='right')
                     set_appearance(ws, cell.row, offset + 4, 'fg_fill', 'EDEDED')  # light gray
                     set_appearance(ws, cell.row, offset + 4, 'font_color', '833C0C')  # dark brown
 
@@ -979,7 +977,7 @@ def write_weighted_averages(ws):
                             cwe]
                         set_appearance(ws, cell.row, offset + 2, 'font_color', '0000FF')  # blue
                         ws.cell(row=cell.row, column=offset + 2).number_format = '0.00'
-                    ws.cell(row=cell.row, column=offset + 2).alignment = Alignment(horizontal="right")
+                    ws.cell(row=cell.row, column=offset + 2).alignment = Alignment(horizontal='right')
                     set_appearance(ws, cell.row, offset + 2, 'fg_fill', 'DDEBF7')  # light blue
 
                     # r-final
@@ -991,7 +989,7 @@ def write_weighted_averages(ws):
                     suite_data.recall_values_per_cwe_unweighted[cwe] = weight * row_idx[6].value
                     ws.cell(row=cell.row, column=offset + 5).value = suite_data.recall_values_per_cwe_unweighted[cwe]
                     ws.cell(row=cell.row, column=offset + 5).number_format = '0.00'
-                    ws.cell(row=cell.row, column=offset + 5).alignment = Alignment(horizontal="right")
+                    ws.cell(row=cell.row, column=offset + 5).alignment = Alignment(horizontal='right')
                     set_appearance(ws, cell.row, offset + 5, 'fg_fill', 'EDEDED')  # light blue
 
                     # p-avg
@@ -1012,7 +1010,7 @@ def write_weighted_averages(ws):
     ws.merge_cells(start_row=2, start_column=offset + 3, end_row=ws.max_row, end_column=offset + 3)
     ws.cell(row=2, column=offset + 3).value = suite_data.precision_average_unweighted
     ws.cell(row=2, column=offset + 3).number_format = '0.00'
-    ws.cell(row=2, column=offset + 3).alignment = Alignment(horizontal="center", vertical='center')
+    ws.cell(row=2, column=offset + 3).alignment = Alignment(horizontal='center', vertical='center')
     set_appearance(ws, 2, offset + 3, 'font_color', '0000FF')  # blue
     set_appearance(ws, 2, offset + 3, 'fg_fill', 'DDEBF7')  # light blue
     set_appearance(ws, ws.max_row, offset + 3, 'fg_fill', 'DDEBF7')  # light blue
@@ -1020,7 +1018,7 @@ def write_weighted_averages(ws):
     ws.merge_cells(start_row=2, start_column=offset + 6, end_row=ws.max_row, end_column=offset + 6)
     ws.cell(row=2, column=offset + 6).value = suite_data.recall_average_unweighted
     ws.cell(row=2, column=offset + 6).number_format = '0.00'
-    ws.cell(row=2, column=offset + 6).alignment = Alignment(horizontal="center", vertical='center')
+    ws.cell(row=2, column=offset + 6).alignment = Alignment(horizontal='center', vertical='center')
     set_appearance(ws, 2, offset + 6, 'font_color', 'C00000')  # dark red
     set_appearance(ws, 2, offset + 6, 'fg_fill', 'EDEDED')  # light gray
     set_appearance(ws, ws.max_row, offset + 6, 'fg_fill', '808080')  # medium gray
@@ -1039,7 +1037,7 @@ def write_unweighted_averages(suite_data, ws):
         idx += offset
         set_appearance(ws, row, idx + 1, 'fg_fill', 'E6B8B7')
         ws.cell(row=1, column=idx + 1).value = title
-        ws.cell(row=1, column=idx + 1).alignment = Alignment(horizontal="center")
+        ws.cell(row=1, column=idx + 1).alignment = Alignment(horizontal='center')
 
     for row_idx in ws.iter_rows():
         for cell in row_idx:
@@ -1052,13 +1050,13 @@ def write_unweighted_averages(suite_data, ws):
                     # p-wt.
                     ws.cell(row=cell.row, column=offset + 1).value = weight
                     ws.cell(row=cell.row, column=offset + 1).number_format = '0.00'
-                    ws.cell(row=cell.row, column=offset + 1).alignment = Alignment(horizontal="right")
+                    ws.cell(row=cell.row, column=offset + 1).alignment = Alignment(horizontal='right')
                     set_appearance(ws, cell.row, offset + 1, 'fg_fill', 'DDEBF7')  # light blue
                     set_appearance(ws, cell.row, offset + 1, 'font_color', '833C0C')  # dark brown
                     # r-wt.
                     ws.cell(row=cell.row, column=offset + 4).value = weight
                     ws.cell(row=cell.row, column=offset + 4).number_format = '0.00'
-                    ws.cell(row=cell.row, column=offset + 4).alignment = Alignment(horizontal="right")
+                    ws.cell(row=cell.row, column=offset + 4).alignment = Alignment(horizontal='right')
                     set_appearance(ws, cell.row, offset + 4, 'fg_fill', 'EDEDED')  # light gray
                     set_appearance(ws, cell.row, offset + 4, 'font_color', '833C0C')  # dark brown
 
@@ -1073,7 +1071,7 @@ def write_unweighted_averages(suite_data, ws):
                             cwe]
                         set_appearance(ws, cell.row, offset + 2, 'font_color', '0000FF')  # blue
                         ws.cell(row=cell.row, column=offset + 2).number_format = '0.00'
-                    ws.cell(row=cell.row, column=offset + 2).alignment = Alignment(horizontal="right")
+                    ws.cell(row=cell.row, column=offset + 2).alignment = Alignment(horizontal='right')
                     set_appearance(ws, cell.row, offset + 2, 'fg_fill', 'DDEBF7')  # light blue
 
                     # r-final
@@ -1085,7 +1083,7 @@ def write_unweighted_averages(suite_data, ws):
                     suite_data.recall_values_per_cwe_unweighted[cwe] = weight * row_idx[6].value
                     ws.cell(row=cell.row, column=offset + 5).value = suite_data.recall_values_per_cwe_unweighted[cwe]
                     ws.cell(row=cell.row, column=offset + 5).number_format = '0.00'
-                    ws.cell(row=cell.row, column=offset + 5).alignment = Alignment(horizontal="right")
+                    ws.cell(row=cell.row, column=offset + 5).alignment = Alignment(horizontal='right')
                     set_appearance(ws, cell.row, offset + 5, 'fg_fill', 'EDEDED')  # light blue
 
                     # p-avg
@@ -1106,7 +1104,7 @@ def write_unweighted_averages(suite_data, ws):
     ws.merge_cells(start_row=2, start_column=offset + 3, end_row=ws.max_row, end_column=offset + 3)
     ws.cell(row=2, column=offset + 3).value = suite_data.precision_average_unweighted
     ws.cell(row=2, column=offset + 3).number_format = '0.00'
-    ws.cell(row=2, column=offset + 3).alignment = Alignment(horizontal="center", vertical='center')
+    ws.cell(row=2, column=offset + 3).alignment = Alignment(horizontal='center', vertical='center')
     set_appearance(ws, 2, offset + 3, 'font_color', '0000FF')  # blue
     set_appearance(ws, 2, offset + 3, 'fg_fill', 'DDEBF7')  # light blue
     set_appearance(ws, ws.max_row, offset + 3, 'fg_fill', 'DDEBF7')  # light blue
@@ -1115,7 +1113,7 @@ def write_unweighted_averages(suite_data, ws):
     ws.merge_cells(start_row=2, start_column=offset + 6, end_row=ws.max_row, end_column=offset + 6)
     ws.cell(row=2, column=offset + 6).value = suite_data.recall_average_unweighted
     ws.cell(row=2, column=offset + 6).number_format = '0.00'
-    ws.cell(row=2, column=offset + 6).alignment = Alignment(horizontal="center", vertical='center')
+    ws.cell(row=2, column=offset + 6).alignment = Alignment(horizontal='center', vertical='center')
     set_appearance(ws, 2, offset + 6, 'font_color', 'C00000')  # dark red
     set_appearance(ws, 2, offset + 6, 'fg_fill', 'EDEDED')  # light gray
     set_appearance(ws, ws.max_row, offset + 6, 'fg_fill', '808080')  # medium gray
@@ -1131,20 +1129,20 @@ def set_cwe_weightings(suite_dat):
 
 def write_score_and_message_to_summary(ws):
     # revision with git hash
-    ws.cell(row=1, column=8).alignment = Alignment(horizontal="center", vertical='center')
+    ws.cell(row=1, column=8).alignment = Alignment(horizontal='center', vertical='center')
     # ws.merge_cells(start_row=1, start_column=8, end_row=1, end_column=10)
     ws.cell(row=1, column=8).value = ' \'score.exe\', v2.0.' + git_hash[:7]  # todo: keep short hash? or long?
     set_appearance(ws, 1, 8, 'font_color', '000000')  # black
     set_appearance(ws, 1, 8, 'fg_fill', 'F2F2F2')  # light gray
     # pass/fail notification
-    ws.cell(row=1, column=9).alignment = Alignment(horizontal="center", vertical='center')
+    ws.cell(row=1, column=9).alignment = Alignment(horizontal='center', vertical='center')
     ws.cell(row=1, column=9).value = suite_data.pass_fail
     set_appearance(ws, 1, 9, 'font_color', 'FFFFFF')  # white
     set_appearance(ws, 1, 9, 'fg_fill', '008000')  # green
     cell = ws['I1']
     cell.font = cell.font.copy(bold=True, italic=False)
     # manual review notification
-    ws.cell(row=1, column=10).alignment = Alignment(horizontal="left", vertical='center')
+    ws.cell(row=1, column=10).alignment = Alignment(horizontal='left', vertical='center')
     ws.merge_cells(start_row=1, start_column=10, end_row=1, end_column=28)
     ws.cell(row=1, column=10).value = suite_data.manual_review_recommendataion
     set_appearance(ws, 1, 10, 'font_color', '000000')  # black
@@ -1157,28 +1155,28 @@ def write_score_and_message_to_score_sheet(suite_dat, ws):
     col_offset = 7
 
     # score label
-    ws.cell(row=1, column=7 + col_offset).alignment = Alignment(horizontal="center", vertical='center')
+    ws.cell(row=1, column=7 + col_offset).alignment = Alignment(horizontal='center', vertical='center')
     ws.cell(row=1, column=7 + col_offset).value = 'SCORE='
     set_appearance(ws, 1, 7 + col_offset, 'font_color', '000000')  # black
     set_appearance(ws, 1, 7 + col_offset, 'fg_fill', 'F2F2F2')  # light gray
     # score value
-    ws.cell(row=1, column=8 + col_offset).alignment = Alignment(horizontal="center", vertical='center')
+    ws.cell(row=1, column=8 + col_offset).alignment = Alignment(horizontal='center', vertical='center')
     ws.cell(row=1, column=8 + col_offset).value = '%0.2f' % (
         (suite_dat.precision_average_unweighted + suite_dat.recall_average_unweighted) / 2)
     set_appearance(ws, 1, 8 + col_offset, 'font_color', '000000')  # black
     set_appearance(ws, 1, 8 + col_offset, 'fg_fill', 'F2F2F2')  # light gray
     # threshold label
-    ws.cell(row=1, column=9 + col_offset).alignment = Alignment(horizontal="center", vertical='center')
+    ws.cell(row=1, column=9 + col_offset).alignment = Alignment(horizontal='center', vertical='center')
     ws.cell(row=1, column=9 + col_offset).value = 'THRESH='
     set_appearance(ws, 1, 9 + col_offset, 'font_color', '000000')  # black
     set_appearance(ws, 1, 9 + col_offset, 'fg_fill', 'FFE699')  # light yellow
     # threshold value
-    ws.cell(row=1, column=10 + col_offset).alignment = Alignment(horizontal="center", vertical='center')
+    ws.cell(row=1, column=10 + col_offset).alignment = Alignment(horizontal='center', vertical='center')
     ws.cell(row=1, column=10 + col_offset).value = suite_dat.overall_required_threshold_unweighted
     set_appearance(ws, 1, 10 + col_offset, 'font_color', '000000')  # black
     set_appearance(ws, 1, 10 + col_offset, 'fg_fill', 'F2F2F2')  # light gray
     # pass/fail notification
-    ws.cell(row=1, column=11 + col_offset).alignment = Alignment(horizontal="center", vertical='center')
+    ws.cell(row=1, column=11 + col_offset).alignment = Alignment(horizontal='center', vertical='center')
     ws.cell(row=1, column=11 + col_offset).value = suite_dat.pass_fail
     set_appearance(ws, 1, 11 + col_offset, 'font_color', 'FFFFFF')  # white
     set_appearance(ws, 1, 11 + col_offset, 'fg_fill', '008000')  # green
@@ -1217,7 +1215,7 @@ def create_summary_charts():
     c2.y_axis.scaling.min = 0
     c2.y_axis.scaling.max = 1
     # c2.legend = None
-    c2.y_axis.crosses = "max"
+    c2.y_axis.crosses = 'max'
 
     # precision average
     s2 = c2.series[0]
@@ -1301,7 +1299,7 @@ def create_score_charts():
     # p and r average scaling
     p_r_average_line_chart.y_axis.scaling.min = 0
     p_r_average_line_chart.y_axis.scaling.max = 1
-    p_r_average_line_chart.y_axis.crosses = "max"
+    p_r_average_line_chart.y_axis.crosses = 'max'
     # precision average
     p_r_average_series = p_r_average_line_chart.series[0]
     p_r_average_series.graphicalProperties.line.solidFill = '4572A7'  # dark blue
@@ -1507,7 +1505,7 @@ def githash(path):
             if not data1:
                 break
     file_length = os.stat(path + '\\score.py').st_size
-    s.update(("blob %u\0" % file_length).encode('utf-8'))
+    s.update(('blob %u\0' % file_length).encode('utf-8'))
     s.update(data1)
     return s.hexdigest()
 
