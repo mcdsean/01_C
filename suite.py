@@ -7,6 +7,7 @@ FVDL_NAME = "audit.fvdl"
 SCORE_THRESHOLD_UNWEIGHTED = 0.45
 SCORE_THRESHOLD_WEIGHTED = 0.45
 
+
 class TestCase(object):
     def __init__(self, test_case_name, tc_type, true_false, tc_lang):
 
@@ -282,8 +283,8 @@ class Suite(object):
                 new_xml_name = str(base_name.rsplit('.', 2)[1]) + '_' + true_false[:1] + '_' + 'juliet' + '.xml'
             elif 'kdm' in scan_data_file:
                 tc_type = 'kdm'
-                new_xml_name = re.sub('(_[TF]_)', '_', str(base_name.rsplit('.', 2)[1])) + '_' + true_false[
-                                                                                                 :1] + '_' + 'kdm' + '.xml'
+                new_xml_name = re.sub('(_[TF]_)', '_', str(base_name.rsplit('.', 2)[1])) + '_' + \
+                               true_false[:1] + '_' + 'kdm' + '.xml'
             else:
                 tc_type = 'N/A'
                 new_xml_name = 'N/A'

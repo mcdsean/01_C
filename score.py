@@ -4,7 +4,7 @@
 # 2016-12-01 smcdonagh@keywcorp.com: initial version
 #
 import os, re, argparse, shutil, py_common, operator
-import xml.etree.ElementTree as ET
+import xml.etree.ElementTree as elemTree
 
 from hashlib import sha1
 from time import strftime
@@ -25,8 +25,9 @@ WID_DELIMITER_FORTIFY = ':'
 
 
 def format_workbook():
-    hit_sheet_titles = ['CWE', 'Type', 'T/F', 'File Name', 'Line #', 'Function', 'SCORE', 'Opps', '%', 'Opportunities']
     # hit_analytics_titles = ['Encapsulating Function', 'Hits', 'Opps', '%-Hits', 'Group', 'HITS', 'OPPS', '%-grp']
+
+    hit_sheet_titles = ['CWE', 'Type', 'T/F', 'File Name', 'Line #', 'Function', 'SCORE', 'Opps', '%', 'Opportunities']
 
     # set varying col widths for sheet 1
     ws1.column_dimensions['A'].width = 8
@@ -186,7 +187,7 @@ def score_xmls(suite_dat):
 
         # read namespace from the first xml since it will be the same for all other xmls
         xml_path = os.path.join(os.getcwd(), 'xmls', getattr(xml_project, 'new_xml_name'))
-        tree = ET.parse(xml_path)
+        tree = elemTree.parse(xml_path)
         root = tree.getroot()
         ns["ns1"] = root.tag.split("}")[0].replace('{', '')
 
@@ -1157,6 +1158,7 @@ def write_unweighted_averages(suite_data, ws):
     set_appearance(ws, 2, offset + 3, 'font_color', '0000FF')  # blue
     set_appearance(ws, 2, offset + 3, 'fg_fill', 'DDEBF7')  # light blue
     set_appearance(ws, ws.max_row, offset + 3, 'fg_fill', 'DDEBF7')  # light blue
+
     # r-avg display
     ws.merge_cells(start_row=2, start_column=offset + 6, end_row=ws.max_row, end_column=offset + 6)
     ws.cell(row=2, column=offset + 6).value = suite_data.recall_average_unweighted
@@ -1236,6 +1238,7 @@ def set_appearance(ws_id, row_id, col_id, style_id, color_id, border=True):
     if style_id == 'font_color':
         font_color = Font(color=color_id)
         cell.font = font_color
+
     if style_id == 'fg_fill':
         fill_color = PatternFill(fgColor=color_id, fill_type='solid')
         cell.fill = fill_color
@@ -1259,8 +1262,6 @@ def create_summary_charts():
     v2 = Reference(ws1, min_col=30, min_row=1, max_row=53)
     # c2.add_data(v2, titles_from_data=False, from_rows=False)
     c2.add_data(v2, titles_from_data=True, from_rows=False)
-    # c2.y_axis.axId = 200
-    # c2.y_axis.title = "Humans"
     c2.y_axis.scaling.min = 0
     c2.y_axis.scaling.max = 1
     # c2.legend = None
@@ -1309,7 +1310,6 @@ def create_summary_charts():
     p_chart.width = 40
 
     p_chart += c2
-
     ws1.add_chart(p_chart, 'H2')
 
     tcc_true_bar_chart = BarChart(gapWidth=0)
@@ -1405,7 +1405,6 @@ def create_score_charts():
     tcc_true_bar_chart.type = 'col'
     tcc_true_bar_chart.style = 5
     tcc_true_bar_chart.y_axis.title = 'Tese Case Counts (True)'
-    # tcc_true_bar_chart.x_axis.title = 'CWE Number'
 
     tcc_true_data = Reference(ws5, min_col=2, min_row=1, max_row=52, max_col=2)
     tcc_true_bar_chart.add_data(tcc_true_data, titles_from_data=True)
@@ -1531,7 +1530,6 @@ def get_used_wids(scan_data):
 
         # go thru each project looking for this cwe
         for xml_project in suite_data.xml_projects:
-
             # if the cwe for this project matches, get it's wids
             if cwe == getattr(xml_project, 'cwe_id_padded'):
                 used_wids_per_cwe.extend(getattr(xml_project, 'used_wids'))
