@@ -25,95 +25,52 @@ WID_DELIMITER_FORTIFY = ':'
 
 
 def format_workbook():
-    # hit_analytics_titles = ['Encapsulating Function', 'Hits', 'Opps', '%-Hits', 'Group', 'HITS', 'OPPS', '%-grp']
-
+    # column titles
     hit_sheet_titles = ['CWE', 'Type', 'T/F', 'File Name', 'Line #', 'Function', 'SCORE', 'Opps', '%', 'Opportunities']
-
-    # set varying col widths for sheet 1
-    ws1.column_dimensions['A'].width = 8
-    ws1.column_dimensions['B'].width = 8
-    ws1.column_dimensions['C'].width = 8
-    ws1.column_dimensions['D'].width = 8
-    ws1.column_dimensions['E'].width = 8
-    ws1.column_dimensions['F'].width = 8
-    ws1.column_dimensions['G'].width = 8
-    ws1.column_dimensions['H'].width = 22
-    ws1.column_dimensions['I'].width = 8
-    ws1.sheet_view.zoomScale = 80
-    ws1.sheet_view.showGridLines = False
-
-    # set varying col widths for sheet 2
-    ws2.column_dimensions['A'].width = 8
-    ws2.column_dimensions['B'].width = 6
-    ws2.column_dimensions['C'].width = 6
-    ws2.column_dimensions['D'].width = 5
-    ws2.column_dimensions['E'].width = 6
-    ws2.column_dimensions['F'].width = 6
-    ws2.column_dimensions['G'].width = 38
-    ws2.column_dimensions['H'].width = 62
-    ws2.column_dimensions['I'].width = 95
-    ws2.sheet_view.zoomScale = 80
-    ws2.sheet_view.showGridLines = False
-
-    # hit data
-    ws3.column_dimensions['A'].width = 8
-    ws3.column_dimensions['B'].width = 6
-    ws3.column_dimensions['C'].width = 6
-    ws3.column_dimensions['D'].width = 108
-    ws3.column_dimensions['E'].width = 6
-    ws3.column_dimensions['F'].width = 17
-    ws3.column_dimensions['G'].width = 6
-    ws3.column_dimensions['H'].width = 6
-    ws3.column_dimensions['I'].width = 8
-    ws3.column_dimensions['J'].width = 12
-    ws3.column_dimensions['K'].width = 12
-    ws3.column_dimensions['L'].width = 12
-    ws3.column_dimensions['M'].width = 12
-    ws3.sheet_view.zoomScale = 70
-    ws3.sheet_view.showGridLines = False
-
-    # freeze first row and column
-    ws3.freeze_panes = ws3['A2']
-    # write column headers # todo: 5/9/7 repeat this technique for other headers
     for idx, title in enumerate(hit_sheet_titles):
         set_appearance(ws3, 1, idx + 1, 'fg_fill', 'C9C9C9')
         ws3.cell(row=1, column=idx + 1).value = title
-        ws3.cell(row=1, column=idx + 1).alignment = Alignment(horizontal="center")
-
+        ws3.cell(row=1, column=idx + 1).alignment = Alignment(horizontal='center')
+    # column widths
+    ws1_col_widths = [('A', 8), ('B', 8), ('C', 8), ('D', 8), ('E', 8), ('F', 8), ('G', 8), ('H', 22), ('I', 8)]
+    ws2_col_widths = [('A', 8), ('B', 6), ('C', 6), ('D', 5), ('E', 6), ('F', 6), ('G', 38), ('H', 62), ('I', 95)]
+    ws3_col_widths = [('A', 8), ('B', 6), ('C', 6), ('D', 108), ('E', 6), ('F', 17), ('G', 6), ('H', 6), ('I', 8),
+                      ('J', 12), ('K', 12), ('L', 12), ('M', 12)]
+    ws4_col_widths = [('A', 18), ('B', 6), ('C', 6), ('D', 6), ('E', 6), ('F', 10), ('G', 6), ('H', 6), ('I', 6)]
+    ws5_col_widths = [('A', 8), ('B', 8), ('C', 8), ('D', 8), ('E', 8), ('F', 8), ('G', 8), ('H', 7), ('I', 7),
+                      ('J', 5), ('K', 7), ('L', 7), ('M', 5), ('AC', 12)]
+    # column widths
+    for ws1_col_id, ws1_col_width in ws1_col_widths:
+        ws1.column_dimensions[ws1_col_id].width = ws1_col_width
+    for ws2_col_id, ws2_col_width in ws2_col_widths:
+        ws2.column_dimensions[ws2_col_id].width = ws2_col_width
+    for ws3_col_id, ws3_col_width in ws3_col_widths:
+        ws3.column_dimensions[ws3_col_id].width = ws3_col_width
+    for ws4_col_id, ws4_col_width in ws4_col_widths:
+        ws4.column_dimensions[ws4_col_id].width = ws4_col_width
+    for ws5_col_id, ws5_col_width in ws5_col_widths:
+        ws5.column_dimensions[ws5_col_id].width = ws5_col_width
+    # zoom
+    ws1.sheet_view.zoomScale = 80
+    ws2.sheet_view.zoomScale = 80
+    ws3.sheet_view.zoomScale = 70
+    ws4.sheet_view.zoomScale = 80
+    ws5.sheet_view.zoomScale = 70
+    # gridlines
+    ws1.sheet_view.showGridLines = False
+    ws2.sheet_view.showGridLines = False
+    ws3.sheet_view.showGridLines = False
+    ws4.sheet_view.showGridLines = False
+    ws5.sheet_view.showGridLines = False
+    # freeze vertical & horizontal panes
+    ws1.freeze_panes = ws1['H2']
+    ws2.freeze_panes = ws2['B2']
+    ws3.freeze_panes = ws3['A2']
+    ws4.freeze_panes = ws4['A2']
+    ws5.freeze_panes = ws5['N2']
+    # merge 'Opportunities' title cells
     ws3.merge_cells('J1:M1')
 
-    # analytics
-    ws4.freeze_panes = ws4['A2']
-    ws4.sheet_view.zoomScale = 80
-    ws4.column_dimensions['A'].width = 18
-    ws4.column_dimensions['B'].width = 6
-    ws4.column_dimensions['C'].width = 6
-    ws4.column_dimensions['D'].width = 6
-    ws4.column_dimensions['E'].width = 6
-    ws4.column_dimensions['F'].width = 10
-    ws4.column_dimensions['G'].width = 6
-    ws4.column_dimensions['H'].width = 6
-    ws4.column_dimensions['I'].width = 6
-    ws4.sheet_view.showGridLines = False
-
-    # SCORE
-    ws5.column_dimensions['A'].width = 8
-    ws5.column_dimensions['B'].width = 8
-    ws5.column_dimensions['C'].width = 8
-    ws5.column_dimensions['D'].width = 8
-    ws5.column_dimensions['E'].width = 8
-    ws5.column_dimensions['F'].width = 8
-    ws5.column_dimensions['G'].width = 8
-    ws5.column_dimensions['H'].width = 7
-    ws5.column_dimensions['I'].width = 7
-    ws5.column_dimensions['J'].width = 5
-    ws5.column_dimensions['K'].width = 7
-    ws5.column_dimensions['L'].width = 7
-    ws5.column_dimensions['M'].width = 5
-    ws5.column_dimensions['AC'].width = 12
-    ws5.freeze_panes = ws5['H2']
-    ws5.sheet_view.zoomScale = 70
-    ws5.sheet_view.showGridLines = False
 
     # todo consider hiding the helper columns for average
     for col in ['AC', 'AD']:
@@ -787,9 +744,6 @@ def write_xml_data(suite_data_details):
     attribute_list = ['cwe_id_padded', 'tc_type', 'true_false', 'tc_count', 'num_of_hits', 'percent_hits',
                       'new_xml_name', 'tc_path', 'scan_data_file']
 
-    # freeze first row and column
-    ws2.freeze_panes = ws2['B2']
-
     # write column headers
     for idx, title in enumerate(detail_sheet_titles):
         set_appearance(ws2, row, idx + 1, 'fg_fill', 'C9C9C9')
@@ -940,13 +894,11 @@ def write_summary_data(scan_data, ws):
 
     # summary sheet
     if ws == ws1:
-        ws.freeze_panes = ws['H2']
         write_score_and_message_to_summary(ws)
         # write_unweighted_averages(suite_data, ws)
 
     # score sheet
     if ws == ws5:
-        ws.freeze_panes = ws['N2']
         # append columns to the right of current data
         # write_unweighted_averages(suite_data, ws)
         write_weighted_averages(ws)
