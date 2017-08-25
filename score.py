@@ -545,7 +545,6 @@ def create_hit_charts():
     pie.title = 'Hits by Group'
 
     labels = Reference(ws4, min_col=10, min_row=3, max_row=6)
-    # data = Reference(ws4, min_col=11, max_col =12, min_row=2, max_row=6)
     data = Reference(ws4, min_col=11, min_row=2, max_row=6)
     pie.add_data(data, titles_from_data=True)
     pie.set_categories(labels)
@@ -1059,7 +1058,6 @@ def write_unweighted_averages(suite_data, ws):
                     ws.cell(row=cell.row, column=offset + 4).alignment = Alignment(horizontal='right')
                     set_appearance(ws, cell.row, offset + 4, 'fg_fill', 'EDEDED')  # light gray
                     set_appearance(ws, cell.row, offset + 4, 'font_color', '833C0C')  # dark brown
-
                     # p-final
                     if row_idx[5].value == 'N/A':
                         suite_data.precision_values_per_cwe_unweighted[cwe] = 'N/A'
@@ -1073,7 +1071,6 @@ def write_unweighted_averages(suite_data, ws):
                         ws.cell(row=cell.row, column=offset + 2).number_format = '0.00'
                     ws.cell(row=cell.row, column=offset + 2).alignment = Alignment(horizontal='right')
                     set_appearance(ws, cell.row, offset + 2, 'fg_fill', 'DDEBF7')  # light blue
-
                     # r-final
                     if row_idx[6].value == 0:
                         set_appearance(ws, cell.row, offset + 5, 'font_color', '808080')  # med gray
