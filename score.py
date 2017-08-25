@@ -84,42 +84,27 @@ def get_schemas(suite_dat):
     for idx, content in enumerate(tag_ids):
         schema = 'ns1:' + getattr(suite_dat, 'tag_info')[idx][1].replace('/', '/ns1:')
 
-        # finding type
-        # todo: simplify these common components by adding function
-        if content[0].lower() == 'finding_type':
-            if content[2].lower() == 'tag':
+        # 'Item' & 'Tag or Attribute'
+        item = content[0].lower()
+        tag_or_attribute = content[2].lower()
+
+        # 'Finding_Type'
+        if item == 'finding_type':
+            if tag_or_attribute == 'tag':
                 schemas['finding_type_schema'] = schema
             continue
 
-        # file name
-        if content[0].lower() == 'file_name':
-            if content[2].lower() == 'tag':
-                schemas['file_name_schema'] = schema
-            elif content[2].lower() == 'attribute':
-                schemas['file_name_schema'] = schema.rsplit('/', 1)[0]
-                schemas['file_name_attrib'] = schema.rsplit(':', 1)[1]
+        # 'File_Name', 'Line_Number' & 'Function_Name'
+        if item == 'file_name' or item == 'line_number' or item == 'function_name':
+            if tag_or_attribute == 'tag':
+                schemas[item + '_schema'] = schema
+            elif tag_or_attribute == 'attribute':
+                schemas[item + '_schema'] = schema.rsplit('/', 1)[0]
+                schemas[item + '_attrib'] = schema.rsplit(':', 1)[1]
             continue
 
-        # line number
-        if content[0].lower() == 'line_number':
-            if content[2].lower() == 'tag':
-                schemas['line_number_schema'] = schema
-            elif content[2].lower() == 'attribute':
-                schemas['line_number_schema'] = schema.rsplit('/', 1)[0]
-                schemas['line_number_attrib'] = schema.rsplit(':', 1)[1]
-            continue
-
-        # function name
-        if content[0].lower() == 'function_name':
-            if content[2].lower() == 'tag':
-                schemas['function_name_schema'] = schema
-            elif content[2].lower() == 'attribute':
-                schemas['function_name_schema'] = schema.rsplit('/', 1)[0]
-                schemas['function_name_attrib'] = schema.rsplit(':', 1)[1]
-            continue
-
-        # weakness ids
-        if 'weakness' in content[0].lower():
+        # 'Weakness_ID_'s
+        if 'weakness' in item:
             weakness_id_schemas.append('ns1:' + str(tag_ids[idx][1]).replace('/', '/ns1:'))
 
     return schemas, weakness_id_schemas
