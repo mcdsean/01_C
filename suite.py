@@ -46,7 +46,6 @@ class TestCase(object):
         # self.update_match_levels(self.TODO)
 
     def get_juliet_false_opp_counts_per_test_case(self, test_case_name):
-
         # this method only applies to juliet/false test cases
         if self.tc_type == 'juliet' and self.true_false == 'FALSE':
 
@@ -62,7 +61,7 @@ class TestCase(object):
 
                     if self.tc_lang == 'c':
                         if file.startswith(test_case_name.rsplit('/', 1)[1]) and file.endswith(self.tc_lang):
-                            # read thru the entire test case file and look for 'good...()' function calls (i.e. opportunities)
+                            # read thru entire test case file and look for 'good...()' funct. calls (i.e. opportunities)
                             with open(root + "\\" + file, 'r') as inF:
                                 for line in inF:
                                     # todo: 6/14/17 for c++, we have multiple good()'s
@@ -85,7 +84,7 @@ class TestCase(object):
                         if file.startswith(test_case_name.rsplit('/', 1)[1]) and file.endswith(self.tc_lang) \
                                 and '_bad' not in file and '_goodG2B' not in file and '_goodB2G' not in file:
 
-                            # read thru the entire test case file and look for 'good...()' function calls (i.e. opportunities)
+                            # read thru entire test case file and look for 'good...()' funct. calls (i.e. opportunities)
                             with open(root + "\\" + file, 'r') as inF:
                                 line_content = []
                                 for line in inF:
@@ -112,7 +111,6 @@ class TestCase(object):
             self.opp_names.extend(['N/A', '', '', ''])
 
     def update_match_levels(self, file_name):
-
         # todo: calculate the match level
         self.hit_data_match_levels = {file_name: 1}
 
@@ -143,7 +141,6 @@ class Xml(object):
 
 class Suite(object):
     def __init__(self, source_path, dest_path, tool_name):
-
         self.source_path = source_path
         self.dest_path = dest_path
         self.tool_name = tool_name
@@ -173,7 +170,6 @@ class Suite(object):
         self.suite_tp_count = 0
         self.suite_fp_count = 0
         self.suite_cwe_count = 0
-
         # precision, unweighted
         self.precision_values_per_cwe_unweighted = {}
         self.precision_accumulated_valid_values_unweighted = 0
@@ -198,7 +194,6 @@ class Suite(object):
         self.recall_accumulated_count_weighted = 0
         self.recall_average_weighted = 0
         self.recall_score_weighted = 0
-
         # accumulated results, unweighted
         self.overall_score_unweighted = 0
         self.overall_required_threshold_unweighted = SCORE_THRESHOLD_UNWEIGHTED
@@ -223,14 +218,12 @@ class Suite(object):
         self.sort_by_columns()
 
     def clear_totals(self):
-
         self.suite_tc_count_true = 0
         self.suite_tc_count_false = 0
         self.suite_tp_count = 0
         self.suite_fp_count = 0
 
     def create_xml_dir(self):
-
         # create, or empty, 'xmls' folder
         #
         # Note: Deleting entire folder and then re-creating it immediately sometimes conflicts
@@ -243,8 +236,8 @@ class Suite(object):
             os.makedirs(self.dest_path)
         else:
             py_common.print_with_timestamp(self.dest_path + " already exists. Cleaning before use...")
-            fileList = os.listdir(self.dest_path)
-            for fileName in fileList:
+            file_list = os.listdir(self.dest_path)
+            for fileName in file_list:
                 # os.remove(self.dest_path + "//" + fileName)
                 os.remove(os.path.join(self.dest_path, fileName))
 
@@ -255,7 +248,6 @@ class Suite(object):
             self.scan_data_files = py_common.find_files_in_dir(self.source_path, '.*?\.xml$')
 
     def get_xml_info(self, scan_data_files):
-
         for scan_data_file in scan_data_files:
 
             # get cwe number from project name
@@ -299,7 +291,6 @@ class Suite(object):
         return self.xml_projects
 
     def copy_xml_file(self, scan_data_file, new_xml_name):
-
         if self.tool_name == 'fortify':
             # self.extract_fvdl_from_fpr(scan_data_file, self.dest_path)
 
@@ -315,7 +306,6 @@ class Suite(object):
         os.rename(tool_path_to_xml, new_path_to_xml)
 
     def get_test_case_paths_and_counts(self, scan_data_files):
-
         key_list = []
         root_list = []
 
@@ -349,7 +339,6 @@ class Suite(object):
                     break
 
     def count_test_cases(self, projedt_id, tc_path):
-
         test_case_files = []
 
         tc_type = getattr(self.xml_projects[projedt_id], 'tc_type')
@@ -376,7 +365,6 @@ class Suite(object):
         setattr(self.xml_projects[projedt_id], 'tc_count', tc_count)
 
     def sort_by_columns(self):
-
         # reverse the order of the desired sort priority #todo: consider moving this to another location
         self.xml_projects.sort(key=operator.attrgetter('true_false'), reverse=False)
         self.xml_projects.sort(key=operator.attrgetter('tc_type'))

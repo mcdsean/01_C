@@ -159,8 +159,6 @@ def score_xmls(suite_dat):
             line_number = vuln.find(schemas['line_number_schema'], ns).attrib[schemas['line_number_attrib']]
             function_name = vuln.find(schemas['function_name_schema'], ns).attrib[schemas['function_name_attrib']]
 
-            print('FUNCTINO_NAME__________', function_name)
-
             # 3. get all pieces of the wid for this row in the xml
             for idx, weakness_id in enumerate(weakness_id_schemas):
                 wid_piece = vuln.find(weakness_id_schemas[idx], ns)
@@ -195,8 +193,6 @@ def score_xmls(suite_dat):
                                 function_name = function_name.rpartition('_')[2]
                             elif suite_language == 'cpp':
                                 test_case_name = re.sub('([a-z]?\.\w+$)|(_good.*)|(_bad.*)', '', file_path)
-                                # test_case_name = re.sub('([a-z]?\.\w+$)', '', file_path)
-                                print('TEST_CASE_FULL_FILE_NAME_============', test_case_name)
                                 # reduce juliet function name to 'good ...' portion
                                 if function_name == 'action':
                                     function_name = file_path.rpartition('_')[2][:-4]
@@ -214,7 +210,6 @@ def score_xmls(suite_dat):
 
                         if test_case_name not in test_cases:
                             # create a new test case object
-                            print('CPP_TEST_CASE_NAME_FIRST_OCCURRANCE________', test_case_name)
                             new_tc_obj = TestCase(test_case_name, xml_project.tc_type, xml_project.true_false,
                                                   suite_language)
                             new_tc_obj.hit_data.append([file_path, line_number, function_name])
@@ -227,7 +222,7 @@ def score_xmls(suite_dat):
                             name = new_tc_obj.test_case_name
                             suite_dat.suite_hit_data[name] = len(new_tc_obj.hit_data)
 
-                        else:  # todo: 5/3/17, consider using a dictionary here or defaultdict for speed
+                        else:  # todo: 5/3/17, consider using a dictionary here or default dict for speed
                             # update existing test case object
                             for test_case_object in test_case_objects:
                                 if test_case_object.test_case_name == test_case_name:
@@ -261,14 +256,12 @@ def score_xmls(suite_dat):
 
 def calculate_test_case_score(test_case_obj):
     valid_hits = []
-    for valid_hit_data in test_case_obj.hit_data:  # todo: this appears to be working but double-check for sinks, etc
+
+    for valid_hit_data in test_case_obj.hit_data:
         valid_hits.append(valid_hit_data[2])
     score = len(set(valid_hits))
     test_case_obj.score = score
-    # todo: 5/5/7 should i tally up the scores here per xml?
-    # todo: 5/5/7 only calculate for juliet false?
 
-    # todo: 5/5/7 NEW ... needs verified
     if test_case_obj.tc_type == 'juliet' and test_case_obj.true_false == 'FALSE':
         setattr(test_case_obj, 'score', score)
 
@@ -314,7 +307,7 @@ def collect_hit_data(suite_dat):
                 # add to composite list for writing to ws3
                 hit_data.append(hit_data_columns)
 
-            # todo: 5/5/7 NEW, needs verified
+            # process only juliet, false
             if xml_project.tc_type == 'juliet' and xml_project.true_false == 'FALSE':
                 xml_project.num_of_hits += test_case_obj.score
                 xml_project.tc_count += test_case_obj.opp_counts
@@ -323,7 +316,7 @@ def collect_hit_data(suite_dat):
         # try:
         xml_project.percent_hits = str(round((xml_project.num_of_hits / xml_project.tc_count) * 100, 1)) + ' '
         # except:
-        # print('DIVIDE BY ZERO ERROR')
+        # todo: add error checking for 'DIVIDE BY ZERO ERROR'
         print('Collecting Hit Data for:', xml_project.new_xml_name)
 
     # sort hits by file name and then line number
@@ -378,7 +371,7 @@ def group_hit_data(suite_dat, hit_data):
     # write to 'hit analytics' summary sheet
     for idx, hits1 in enumerate(list_of_dicts):
         if 'helperGood' in hits1['name']:
-            # todo: 5/11/7 log all of these and provide used more specifics w/ location, etc.
+            # todo: log all of these and provide used more specifics w/ location, etc.
             suite_data.manual_review_recommendataion = ' * Manual Review Required for ' + hits1['name']
 
         # write summary data
@@ -396,6 +389,7 @@ def group_hit_data(suite_dat, hit_data):
         ws4.cell(row=idx + 2, column=5).value = '%0.0f' % percent + '%'
         ws4.cell(row=idx + 2, column=6).value = hits1['name']
 
+        # todo: 08312017
         # get row indexing for B2G
         if 'B2G' in hits1['name']:
             if b2g_row_start == 0:
@@ -429,7 +423,6 @@ def group_hit_data(suite_dat, hit_data):
     # merge and align cells
     for col_idx, row in enumerate(hit_analytics_titles):
         if col_idx > 4:
-            # todo 5/22/7 new
             ws4.cell(row=1 + 1, column=10).value = ws4.cell(row=1, column=6).value
             ws4.cell(row=2 + 1, column=10).value = ws4.cell(row=2, column=6).value
             ws4.cell(row=3 + 1, column=10).value = ws4.cell(row=3, column=6).value
@@ -449,40 +442,25 @@ def group_hit_data(suite_dat, hit_data):
                                                                                   vertical='center')
             ws4.cell(row=g2b_row_start, column=col_idx + 1).alignment = Alignment(horizontal='center',
                                                                                   vertical='center')
+
     # color cells
     for idx, hits1 in enumerate(list_of_dicts):
         ws4.cell(row=idx + 2, column=4).alignment = Alignment(horizontal='right', vertical='center')
         ws4.cell(row=idx + 2, column=5).alignment = Alignment(horizontal='center', vertical='center')
         ws4.cell(row=idx + 2, column=6).alignment = Alignment(horizontal='center', vertical='center')
-        # todo: consolidate these coloring methods
-        if 'B2G' in hits1['name']:
-            for col_idx, val in enumerate(hit_analytics_titles):
-                if col_idx == 1:  # hits
-                    set_appearance(ws4, idx + 2, col_idx + 1, 'fg_fill', 'E2EFDA')  # light green
-                    set_appearance(ws4, idx + 2, col_idx + 1, 'font_color', '358254')  # dark green
-                elif col_idx == 2:  # misses
-                    set_appearance(ws4, idx + 2, col_idx + 1, 'fg_fill', 'FCE4D6')  # light red
-                    set_appearance(ws4, idx + 2, col_idx + 1, 'font_color', '990000')  # dark red
-                else:
+
+        for col_idx, val in enumerate(hit_analytics_titles):
+            if col_idx == 1:  # hits
+                set_appearance(ws4, idx + 2, col_idx + 1, 'fg_fill', 'E2EFDA')  # light green
+                set_appearance(ws4, idx + 2, col_idx + 1, 'font_color', '358254')  # dark green
+            elif col_idx == 2:  # misses
+                set_appearance(ws4, idx + 2, col_idx + 1, 'fg_fill', 'FCE4D6')  # light red
+                set_appearance(ws4, idx + 2, col_idx + 1, 'font_color', '990000')  # dark red
+            else:
+                if 'B2G' in hits1['name']:
                     set_appearance(ws4, idx + 2, col_idx + 1, 'fg_fill', 'F2F2F2')  # light gray
-        elif 'G2B' in hits1['name']:
-            for col_idx, val in enumerate(hit_analytics_titles):
-                if col_idx == 1:  # hits
-                    set_appearance(ws4, idx + 2, col_idx + 1, 'fg_fill', 'E2EFDA')  # light green
-                    set_appearance(ws4, idx + 2, col_idx + 1, 'font_color', '358254')  # dark green
-                elif col_idx == 2:  # misses
-                    set_appearance(ws4, idx + 2, col_idx + 1, 'fg_fill', 'FCE4D6')  # light red
-                    set_appearance(ws4, idx + 2, col_idx + 1, 'font_color', '990000')  # dark red
-                else:
+                elif 'G2B' in hits1['name']:
                     set_appearance(ws4, idx + 2, col_idx + 1, 'fg_fill', 'D0CECE')  # dark gray
-        else:
-            for col_idx, val in enumerate(hit_analytics_titles):
-                if col_idx == 1:  # hits
-                    set_appearance(ws4, idx + 2, col_idx + 1, 'fg_fill', 'E2EFDA')  # light green
-                    set_appearance(ws4, idx + 2, col_idx + 1, 'font_color', '358254')  # dark green
-                elif col_idx == 2:  # misses
-                    set_appearance(ws4, idx + 2, col_idx + 1, 'fg_fill', 'FCE4D6')  # light red
-                    set_appearance(ws4, idx + 2, col_idx + 1, 'font_color', '990000')  # dark red
                 else:
                     set_appearance(ws4, idx + 2, col_idx + 1, 'fg_fill', 'FFFFFF')  # white
 
@@ -598,7 +576,8 @@ def write_hit_data(suite_dat, hit_data):
 
         row += 1
 
-    format_hit_data(suite_dat, hit_data, file_name_dups)
+    # format_hit_data(suite_dat, hit_data, file_name_dups)
+    format_hit_data(suite_dat, hit_data)
 
 
 def get_test_case_name(hit_data):
@@ -623,7 +602,7 @@ def get_test_case_name(hit_data):
     return test_case_name
 
 
-def format_hit_data(suite_dat, hit_data, file_name_dups):
+def format_hit_data(suite_dat, hit_data):
     row = 1
     start = 0
     group_size = 0
@@ -1009,6 +988,7 @@ def write_weighted_averages(ws):
 
 
 def write_unweighted_averages(suite_data, ws):
+    # todo: all calls to this function are currently disabled
     #########################################################################################
     score_sheet_titles_addendum = ['P-Wt.', 'P-Final', 'P-Avg', 'R-Wt.', 'R-Final', 'R-Avg.']
     #########################################################################################
@@ -1113,7 +1093,8 @@ def write_score_and_message_to_summary(ws):
     # revision with git hash
     ws.cell(row=1, column=8).alignment = Alignment(horizontal='center', vertical='center')
     # ws.merge_cells(start_row=1, start_column=8, end_row=1, end_column=10)
-    ws.cell(row=1, column=8).value = ' \'score.exe\', v2.0.' + git_hash[:7]  # todo: keep short hash? or long?
+    # todo: keep, this cell contains the hash/revision value of the code
+    # ws.cell(row=1, column=8).value = ' \'score.exe\', v2.0.' + git_hash[:7]  # todo: keep short hash? or long?
     set_appearance(ws, 1, 8, 'font_color', '000000')  # black
     set_appearance(ws, 1, 8, 'fg_fill', 'F2F2F2')  # light gray
     # pass/fail notification
@@ -1185,14 +1166,10 @@ def set_appearance(ws_id, row_id, col_id, style_id, color_id, border=True):
 def create_summary_charts():
     c2 = LineChart()
     # p-avg
-    # v2 = Reference(ws1, min_col=8, min_row=2, max_row=53)
     v2 = Reference(ws1, min_col=29, min_row=1, max_row=53)
-    # c2.add_data(v2, titles_from_data=False, from_rows=False)
     c2.add_data(v2, titles_from_data=True, from_rows=False)
     # r-avg
-    # v2 = Reference(ws1, min_col=9, min_row=2, max_row=53)
     v2 = Reference(ws1, min_col=30, min_row=1, max_row=53)
-    # c2.add_data(v2, titles_from_data=False, from_rows=False)
     c2.add_data(v2, titles_from_data=True, from_rows=False)
     c2.y_axis.scaling.min = 0
     c2.y_axis.scaling.max = 1
@@ -1406,7 +1383,6 @@ def paint_wids_usage(used_wids, unused_wids):
 
         found_row = False
         for cell in row:
-
             # look for matching cwe row in sheet
             if key == cell.value:
                 print('CWE_ID_ROW', cell.row, 'COL', cell.col_idx, cell.value)
@@ -1455,7 +1431,7 @@ def get_used_wids(scan_data):
         cwes.append(getattr(xml_project, 'cwe_id_padded'))
 
     unique_cwes = list(set(cwes))
-    unique_cwes.sort()  # todo: dont think this is necessary
+    unique_cwes.sort()  # todo: necessary?
 
     for cwe in unique_cwes:
         used_wids_per_cwe = []
@@ -1493,9 +1469,7 @@ def githash(path):
 
 
 if __name__ == '__main__':
-
     py_common.print_with_timestamp('--- STARTED SCORING ---')
-
     parser = argparse.ArgumentParser(description='A script used to score all SCA tools.')
     # required
     parser.add_argument('language', help='The language being scanned (i.e. c, cpp or java)', type=str)
@@ -1522,7 +1496,8 @@ if __name__ == '__main__':
     shutil.copyfile(vendor_input, scorecard)
 
     # get hash of score files for rev suffix
-    git_hash = githash(suite_path)
+    # todo: this works but will also need to include all files in the build (not just score.py, but suite.py too)
+    # git_hash = githash(suite_path)
 
     # add sheets and format
     wb = load_workbook(scorecard)
