@@ -15,6 +15,8 @@ from openpyxl.styles import Border, Side, PatternFill, Font, Alignment
 from openpyxl.chart import BarChart, LineChart
 from openpyxl.chart import PieChart, Reference
 from openpyxl.chart.series import DataPoint
+from openpyxl.chart.text import RichText
+from openpyxl.drawing.text import RichTextProperties, Paragraph, ParagraphProperties, CharacterProperties
 
 # Global for command line argument
 normalize_juliet_false_scoring = False
@@ -501,6 +503,11 @@ def create_hit_charts():
     hit_bar_chart.width = 24
     ws4.add_chart(hit_bar_chart, 'J2')
 
+    # set x-axis label orientation to 45 degrees
+    hit_bar_chart.x_axis.txPr = RichText(bodyPr=RichTextProperties(
+        anchor='ctr', anchorCtr='1', rot='-2700000', spcFirstLastPara='1', vertOverflow='ellipsis', wrap='square'),
+        p=[Paragraph(pPr=ParagraphProperties(defRPr=CharacterProperties()), endParaRPr=CharacterProperties())])
+
     # Groups chart
     pie = PieChart()
     pie.height = 10
@@ -513,12 +520,12 @@ def create_hit_charts():
     pie.set_categories(labels)
 
     # color the slices
-    s55 = pie.series[0]
+    pie_slice = pie.series[0]
     pt = DataPoint(idx=2)
     # todo keep for now as reference
     # pt.graphicalProperties.line.solidFill = 'FFFFFF' # white
     pt.graphicalProperties.solidFill = 'BFBFBF'  # gray
-    s55.dPt.append(pt)
+    pie_slice.dPt.append(pt)
 
     ws4.add_chart(pie, 'A16')
 
@@ -675,7 +682,7 @@ def import_xml_tags(suite_dat):
     row_count = ws.max_row
     col_count = ws.max_column
 
-    tag_ids = [[0 for x in range(col_count)] for y in range(row_count)]
+    tag_ids = [[0 for _ in range(col_count)] for _ in range(row_count)]
 
     for row_idx in ws.iter_rows():
         col = 0
@@ -960,14 +967,16 @@ def write_weighted_averages(ws):
                         suite_data.precision_accumulated_valid_count_unweighted += 1
                         suite_data.precision_accumulated_valid_values_unweighted += \
                             suite_data.precision_values_per_cwe_unweighted[cwe]
-                        suite_data.precision_average_unweighted = suite_data.precision_accumulated_valid_values_unweighted \
-                                                                  / suite_data.precision_accumulated_valid_count_unweighted
+                        suite_data.precision_average_unweighted = \
+                            suite_data.precision_accumulated_valid_values_unweighted \
+                            / suite_data.precision_accumulated_valid_count_unweighted
 
                     # r-avg
                     suite_data.recall_accumulated_count_unweighted += 1
                     suite_data.recall_accumulated_values_unweighted += suite_data.recall_values_per_cwe_unweighted[cwe]
-                    suite_data.recall_average_unweighted = suite_data.recall_accumulated_values_unweighted \
-                                                           / suite_data.recall_accumulated_count_unweighted
+                    suite_data.recall_average_unweighted = \
+                        suite_data.recall_accumulated_values_unweighted \
+                        / suite_data.recall_accumulated_count_unweighted
 
     # p-avg display
     ws.merge_cells(start_row=2, start_column=offset + 3, end_row=ws.max_row, end_column=offset + 3)
@@ -1341,7 +1350,7 @@ def import_weakness_ids(suite_dat):
     row_count = ws.max_row
     col_count = ws.max_column
 
-    weakness_ids = [[0 for x in range(col_count)] for y in range(row_count)]
+    weakness_ids = [[0 for _ in range(col_count)] for _ in range(row_count)]
 
     # put all weakness ids into 'weakness_ids' list
     for row_idx in ws.iter_rows():
